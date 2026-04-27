@@ -46,6 +46,20 @@ export class TransactionController {
     }
   }
 
+  async getById(req: Request, res: Response) {
+    try {
+      const id = parseInt(req.params.id as string);
+      const transaction = await transactionService.getTransactionById(id);
+      if (!transaction) {
+        res.status(404).json({ error: 'Transaction not found' });
+        return;
+      }
+      res.json(transaction);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   async addContextMedia(req: Request, res: Response) {
     try {
       const transactionId = parseInt(req.params.id as string);

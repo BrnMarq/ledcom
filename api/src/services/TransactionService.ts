@@ -52,6 +52,13 @@ export class TransactionService {
     });
   }
 
+  async getTransactionById(id: number) {
+    return prisma.transaction.findUnique({
+      where: { id },
+      include: { media: true, items: true }
+    });
+  }
+
   // New method to handle media attachment
   async addMedia(transactionId: number, fileUrl: string, fileType: string) {
     return prisma.transactionMedia.create({
