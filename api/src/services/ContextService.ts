@@ -1,13 +1,13 @@
-import { TransactionType, TransactionFlow } from '@prisma/client';
-import prisma from '../client';
-import { GoogleGenAI } from '@google/genai';
-import * as fs from 'fs';
+import { TransactionType, TransactionFlow } from "@prisma/client";
+import prisma from "../client";
+import { GoogleGenAI } from "@google/genai";
+import * as fs from "fs";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const SYSTEM_PROMPT = `
 Eres un asistente financiero experto. Analiza este recibo (imagen) o nota de voz (audio). 
-1. Identifica todos los artículos comprados, su cantidad y precio unitario.
+1. Identifica todos los artículos comprados, su cantidad y precio unitario incluyendo el impuesto si es que tiene.
 2. Calcula el valor total (totalValue).
 3. Clasifica la transacción (type) estrictamente como 'NEEDS' (necesidades básicas como mercado, renta), 'WANTS' (deseos como café, salidas), o 'SAVINGS' (ahorros o inversiones).
 4. Define el flujo (flow) como 'OUT' (gasto) o 'IN' (ingreso).
@@ -28,34 +28,39 @@ Devuelve ÚNICAMENTE un objeto JSON válido con la siguiente estructura y sin ma
 export class ContextService {
   private async processWithGemini(fileUrl: string, fileType: string) {
     if (!process.env.GEMINI_API_KEY) {
-      console.warn("[ContextService] GEMINI_API_KEY missing. Returning mock data.");
+      console.warn(
+        "[ContextService] GEMINI_API_KEY missing. Returning mock data.",
+      );
       return this.getMockData(fileType);
     }
 
     try {
-      let mimeType = fileType === 'AUDIO' ? 'audio/mpeg' : 'image/jpeg';
-      const fileBase64 = fs.readFileSync(fileUrl).toString('base64');
+      let mimeType = fileType === "AUDIO" ? "audio/mpeg" : "image/jpeg";
+      const fileBase64 = fs.readFileSync(fileUrl).toString("base64");
 
       const response = await ai.models.generateContent({
-        model: 'gemini-flash-latest',
+        model: "gemini-flash-latest",
         contents: [
           {
-            role: 'user',
+            role: "user",
             parts: [
               { text: SYSTEM_PROMPT },
               {
                 inlineData: {
                   mimeType,
-                  data: fileBase64
-                }
-              }
-            ]
-          }
-        ]
+                  data: fileBase64,
+                },
+              },
+            ],
+          },
+        ],
       });
 
       const rawText = response.text || "{}";
-      const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+      const cleanJson = rawText
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
       return JSON.parse(cleanJson);
     } catch (error) {
       console.error("[ContextService] Error calling Gemini API:", error);
@@ -69,36 +74,47 @@ export class ContextService {
   }
 
   private getMockData(fileType: string) {
-    if (fileType === 'AUDIO') {
+    if (fileType === "AUDIO") {
       return {
-        context: "[AI Audio Transcript]: Compré 3 cebollas, un café y una galleta.",
+        context:
+          "[AI Audio Transcript]: Compré 3 cebollas, un café y una galleta.",
         items: [
-          { name: "Cebolla", quantity: 3, unitPrice: 0.50, totalPrice: 1.50 },
-          { name: "Café", quantity: 1, unitPrice: 3.00, totalPrice: 3.00 },
-          { name: "Galleta", quantity: 1, unitPrice: 1.50, totalPrice: 1.50 }
+          { name: "Cebolla", quantity: 3, unitPrice: 0.5, totalPrice: 1.5 },
+          { name: "Café", quantity: 1, unitPrice: 3.0, totalPrice: 3.0 },
+          { name: "Galleta", quantity: 1, unitPrice: 1.5, totalPrice: 1.5 },
         ],
-        totalValue: 6.00,
+        totalValue: 6.0,
         type: "NEEDS",
-        flow: "OUT"
+        flow: "OUT",
       };
     }
-    
+
     return {
-      context: "[AI Image Analysis]: Extracto de recibo: 'Compra confirmada. Monto: $500.00'",
+      context:
+        "[AI Image Analysis]: Extracto de recibo: 'Compra confirmada. Monto: $500.00'",
       items: [
-        { name: "Artículo de recibo", quantity: 1, unitPrice: 500.00, totalPrice: 500.00 }
+        {
+          name: "Artículo de recibo",
+          quantity: 1,
+          unitPrice: 500.0,
+          totalPrice: 500.0,
+        },
       ],
-      totalValue: 500.00,
+      totalValue: 500.0,
       type: "WANTS",
-      flow: "OUT"
+      flow: "OUT",
     };
   }
 
   async processMedia(mediaId: number, transactionId: number) {
-    console.log(`[ContextService] Starting AI processing for Media #${mediaId}...`);
+    console.log(
+      `[ContextService] Starting AI processing for Media #${mediaId}...`,
+    );
 
     try {
-      const media = await prisma.transactionMedia.findUnique({ where: { id: mediaId } });
+      const media = await prisma.transactionMedia.findUnique({
+        where: { id: mediaId },
+      });
       if (!media) return;
 
       const aiResult = await this.processWithGemini(media.url, media.type);
@@ -112,20 +128,32 @@ export class ContextService {
           context: aiResult.context,
           totalValue: aiResult.totalValue > 0 ? aiResult.totalValue : undefined,
           status: "COMPLETED",
-          items: aiResult.items && aiResult.items.length > 0 ? {
-            create: aiResult.items
-          } : undefined
-        }
+          items:
+            aiResult.items && aiResult.items.length > 0
+              ? {
+                  create: aiResult.items,
+                }
+              : undefined,
+        },
       });
 
-      console.log(`[ContextService] Transaction #${transactionId} updated successfully.`);
-
+      console.log(
+        `[ContextService] Transaction #${transactionId} updated successfully.`,
+      );
     } catch (error) {
-      console.error(`[ContextService] Error processing media #${mediaId}:`, error);
+      console.error(
+        `[ContextService] Error processing media #${mediaId}:`,
+        error,
+      );
     }
   }
 
-  async createTransactionFromMedia(accountId: number, fileUrl: string, fileType: string, defaultSymbol: string = "USD") {
+  async createTransactionFromMedia(
+    accountId: number,
+    fileUrl: string,
+    fileType: string,
+    defaultSymbol: string = "USD",
+  ) {
     console.log(`[ContextService] Starting AI processing for new media...`);
 
     const aiResult = await this.processWithGemini(fileUrl, fileType);
@@ -138,28 +166,33 @@ export class ContextService {
         accountId,
         symbol: defaultSymbol,
         totalValue: aiResult.totalValue > 0 ? aiResult.totalValue : 0,
-        type: aiResult.type as TransactionType || "WANTS",
-        flow: aiResult.flow as TransactionFlow || "OUT",
+        type: (aiResult.type as TransactionType) || "WANTS",
+        flow: (aiResult.flow as TransactionFlow) || "OUT",
         context: aiResult.context,
         status: "COMPLETED",
         source: "MANUAL",
-        items: aiResult.items && aiResult.items.length > 0 ? {
-          create: aiResult.items
-        } : undefined,
+        items:
+          aiResult.items && aiResult.items.length > 0
+            ? {
+                create: aiResult.items,
+              }
+            : undefined,
         media: {
           create: {
             url: fileUrl, // Note: the physical file is deleted, but we keep the URL record for history or future cloud upload logic
-            type: fileType
-          }
-        }
+            type: fileType,
+          },
+        },
       },
       include: {
         items: true,
-        media: true
-      }
+        media: true,
+      },
     });
 
-    console.log(`[ContextService] Transaction created successfully with ID #${transaction.id}.`);
+    console.log(
+      `[ContextService] Transaction created successfully with ID #${transaction.id}.`,
+    );
     return transaction;
   }
 }
