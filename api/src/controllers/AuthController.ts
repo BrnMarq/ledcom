@@ -27,4 +27,17 @@ export class AuthController {
       res.status(401).json({ error: error.message });
     }
   }
+
+  async loginWithGoogle(req: Request, res: Response) {
+    try {
+      const { idToken } = req.body;
+      if (!idToken) {
+        return res.status(400).json({ error: 'idToken is required' });
+      }
+      const result = await authService.loginWithGoogle(idToken);
+      res.json(result);
+    } catch (error: any) {
+      res.status(401).json({ error: error.message });
+    }
+  }
 }
