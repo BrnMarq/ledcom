@@ -44,7 +44,16 @@ export class TransactionService {
     });
   }
 
-  async getAccountTransactions(accountId: number) {
+  async getAccountTransactions(accountId: number, userId: number) {
+    // First verify account ownership
+    const account = await prisma.account.findFirst({
+      where: { id: accountId, userId }
+    });
+
+    if (!account) {
+      throw new Error('Cuenta no encontrada o no autorizada');
+    }
+
     return prisma.transaction.findMany({
       where: { accountId },
       orderBy: { date: 'desc' },
@@ -52,9 +61,12 @@ export class TransactionService {
     });
   }
 
-  async getTransactionById(id: number) {
-    return prisma.transaction.findUnique({
-      where: { id },
+  async getTransactionById(id: number, userId: number) {
+    return prisma.transaction.findFirst({
+      where: { 
+        id,
+        account: { userId }
+      },
       include: { media: true, items: true }
     });
   }
