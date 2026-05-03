@@ -1,0 +1,88 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import client from '../api/client';
+
+interface User {
+  id: number;
+  email: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  isLoading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadStoredAuth();
+  }, []);
+
+  async function loadStoredAuth() {
+    try {
+      const storedToken = await SecureStore.getItemAsync('user_token');
+      const storedUser = await SecureStore.getItemAsync('user_data');
+      
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (e) {
+      console.error('Error loading stored auth', e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function signIn(email: string, password: string) {
+    const response = await client.post('/api/auth/login', { email, password });
+    const { user, token } = response.data;
+    
+    await SecureStore.setItemAsync('user_token', token);
+    await SecureStore.setItemAsync('user_data', JSON.stringify(user));
+    
+    setToken(token);
+    setUser(user);
+  }
+
+  async function signUp(email: string, password: string) {
+    const response = await client.post('/api/auth/register', { email, password });
+    const { user, token } = response.data;
+    
+    await SecureStore.setItemAsync('user_token', token);
+    await SecureStore.setItemAsync('user_data', JSON.stringify(user));
+    
+    setToken(token);
+    setUser(user);
+  }
+
+  async function signOut() {
+    await SecureStore.deleteItemAsync('user_token');
+    await SecureStore.deleteItemAsync('user_data');
+    setToken(null);
+    setUser(null);
+  }
+
+  return (
+    <AuthContext.Provider value={{ user, token, isLoading, signIn, signUp, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import client from '../src/api/client';
-import { Wallet, ChevronRight } from 'lucide-react-native';
+import { Wallet, ChevronRight, LogOut } from 'lucide-react-native';
+import { useAuth } from '../src/context/AuthContext';
 
 interface Account {
   id: number;
@@ -14,6 +15,7 @@ export default function AccountsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
+  const { signOut, user } = useAuth();
 
   const fetchAccounts = async () => {
     try {
@@ -46,8 +48,17 @@ export default function AccountsScreen() {
 
   return (
     <View className="flex-1 bg-gray-50 p-4 pt-8">
+      <Stack.Screen 
+        options={{
+          headerRight: () => (
+            <TouchableOpacity onPress={signOut} className="mr-2">
+              <LogOut color="#fff" size={20} />
+            </TouchableOpacity>
+          )
+        }} 
+      />
       <Text className="text-3xl font-bold text-gray-900 mb-2">Hola!</Text>
-      <Text className="text-gray-500 mb-8 text-lg">Selecciona un portafolio para continuar</Text>
+      <Text className="text-gray-500 mb-8 text-lg">{user?.email}</Text>
       
       <FlatList
         data={accounts}
