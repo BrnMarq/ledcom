@@ -3,7 +3,9 @@
 Welcome to the FinanceTracker monorepo! This document provides essential instructions, commands, and code style guidelines for AI agents operating in this codebase.
 
 ## 🏗 Repository Structure
+
 This is a monorepo consisting of two main directories:
+
 - `/api`: The backend server (Node.js, Express, TypeScript, Prisma).
 - `/mobile`: The frontend application (React Native, Expo, NativeWind).
 
@@ -12,6 +14,7 @@ This is a monorepo consisting of two main directories:
 ## 🛠 Build, Lint, and Test Commands
 
 ### Backend (`/api`)
+
 - **Install Dependencies**: `npm install` (will automatically run `postinstall` to generate Prisma client).
 - **Run Development Server**: `npm run dev` (starts `nodemon`).
 - **Build**: `npm run build` (runs Prisma generation and compiles TypeScript via `tsc`).
@@ -19,9 +22,10 @@ This is a monorepo consisting of two main directories:
 - **Generate Prisma Client**: `npx prisma generate` (required after schema changes).
 - **Run All Tests**: `npm test` (executes Jest test suite).
 - **Run a Single Test**: `npx jest src/path/to/test.ts` (e.g., `npx jest src/services/ContextService.test.ts`).
-- *Note*: Before running tests after making schema changes, always delete the `dist/` directory to prevent duplicate test execution errors (`rm -rf dist && npm test`).
+- _Note_: Before running tests after making schema changes, always delete the `dist/` directory to prevent duplicate test execution errors (`rm -rf dist && npm test`).
 
 ### Frontend (`/mobile`)
+
 - **Install Dependencies**: `npm install --legacy-peer-deps` (legacy peer dependencies flag is crucial due to React 19 / Expo 54 mismatch).
 - **Run Development Server**: `npm start` (starts Expo).
 - **Run Server with Cleared Cache**: `npx expo start -c` (essential after installing new Babel plugins or NativeWind configuration changes).
@@ -32,13 +36,15 @@ This is a monorepo consisting of two main directories:
 ## 🎨 Code Style Guidelines
 
 ### 1. General Typescript
+
 - **Strict Mode**: Both the `api` and `mobile` projects use strict TypeScript (`"strict": true`). Always provide interfaces or types for objects. Do not use `any` unless absolutely necessary (like in catch blocks for generic errors).
-- **Naming Conventions**: 
+- **Naming Conventions**:
   - Classes, React Components, and Interfaces: `PascalCase`.
   - Variables, functions, and methods: `camelCase`.
   - Constants and Environment Variables: `UPPER_SNAKE_CASE`.
 
 ### 2. Backend Style (`/api`)
+
 - **Architecture**: The API strictly follows a Controller-Service-Route architecture.
   - **Routes**: Define HTTP methods and attach middleware.
   - **Controllers**: Handle Request/Response objects, parse inputs, handle try/catch blocks, and return HTTP status codes.
@@ -47,6 +53,7 @@ This is a monorepo consisting of two main directories:
 - **Database (Prisma)**: Treat the `schema.prisma` file as the source of truth. Always use strict Enums (e.g., `TransactionType`, `TransactionFlow`) instead of generic strings where applicable.
 
 ### 3. Frontend Style (`/mobile`)
+
 - **Architecture**: We use **Expo Router** for file-based navigation (e.g., `app/index.tsx`, `app/account/[id].tsx`).
 - **Styling**: We use **NativeWind (TailwindCSS)** for styling. Use the `className` prop strictly instead of `StyleSheet.create`.
 - **State Management**: Use React Hooks (`useState`, `useEffect`). For authentication state, use the custom `useAuth()` hook from `src/context/AuthContext.tsx`.
@@ -56,9 +63,13 @@ This is a monorepo consisting of two main directories:
 ---
 
 ## 🔒 Security and Environment
+
 - **Never** hardcode secrets or API keys. Always use `process.env`.
 - For the mobile app, environment variables must be prefixed with `EXPO_PUBLIC_` (e.g., `EXPO_PUBLIC_API_URL`).
 - Do not commit physical media files (images, audio) generated during tests. Always mock AI/File behaviors during Jest testing.
 
 ## 🤖 General Rules
+
 - **CRITICAL**: Do NOT commit code unless the user explicitly tells you to commit.
+- **CRITICAL**: Do NOT force push to the database without asking for permission.
+
