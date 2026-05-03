@@ -1,15 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView } from 'react-native';
 import { useAuth } from '../../src/context/AuthContext';
 import { useRouter, Link } from 'expo-router';
 import { LogIn } from 'lucide-react-native';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle } = useAuth();
   const router = useRouter();
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    clientId: 'process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID',
+    iosClientId: 'process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID',
+    androidClientId: 'process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID',
+  });
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { authentication } = response;
+      if (authentication?.idToken) {
+        handleGoogleLogin(authentication.idToken);
+      }
+    }
+  }, [response]);
+
+  const handleGoogleLogin = async (idToken: string) => {
+    setLoading(true);
+    try {
+      await signInWithGoogle(idToken);
+      router.replace('/');
+    } catch (error: any) {
+      const message = error.response?.data?.error || 'Error al iniciar sesión con Google';
+      Alert.alert('Error', message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -76,11 +108,20 @@ export default function LoginScreen() {
               <Text className="text-white font-bold text-lg">Iniciar Sesión</Text>
             )}
           </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            className="bg-white p-5 rounded-2xl mt-4 flex-row justify-center items-center shadow-sm border border-gray-200"
+            onPress={() => promptAsync()}
+            disabled={!request || loading}
+          >
+            <Text className="text-gray-800 font-bold text-lg">Continuar con Google</Text>
+          </TouchableOpacity>
         </View>
 
         <View className="mt-10 flex-row justify-center">
           <Text className="text-gray-500">¿No tienes cuenta? </Text>
-          <Link href="/auth/register" asChild>
+          <Link href={"/auth/register" as any} asChild>
             <TouchableOpacity>
               <Text className="text-emerald-600 font-bold">Regístrate</Text>
             </TouchableOpacity>

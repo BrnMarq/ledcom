@@ -1,15 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView } from 'react-native';
 import { useAuth } from '../../src/context/AuthContext';
 import { useRouter, Link } from 'expo-router';
 import { UserPlus, ArrowLeft } from 'lucide-react-native';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp, signInWithGoogle } = useAuth();
   const router = useRouter();
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    clientId: 'process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID',
+    iosClientId: 'process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID',
+    androidClientId: 'process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID',
+  });
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { authentication } = response;
+      if (authentication?.idToken) {
+        handleGoogleRegister(authentication.idToken);
+      }
+    }
+  }, [response]);
+
+  const handleGoogleRegister = async (idToken: string) => {
+    setLoading(true);
+    try {
+      await signInWithGoogle(idToken);
+      router.replace('/');
+    } catch (error: any) {
+      const message = error.response?.data?.error || 'Error al registrarse con Google';
+      Alert.alert('Error', message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRegister = async () => {
     if (!email || !password) {
@@ -88,11 +120,20 @@ export default function RegisterScreen() {
               <Text className="text-white font-bold text-lg">Registrarse</Text>
             )}
           </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            className="bg-white p-5 rounded-2xl mt-4 flex-row justify-center items-center shadow-sm border border-gray-200"
+            onPress={() => promptAsync()}
+            disabled={!request || loading}
+          >
+            <Text className="text-gray-800 font-bold text-lg">Registrarse con Google</Text>
+          </TouchableOpacity>
         </View>
 
         <View className="mt-10 flex-row justify-center">
           <Text className="text-gray-500">¿Ya tienes cuenta? </Text>
-          <Link href="/auth/login" asChild>
+          <Link href={"/auth/login" as any} asChild>
             <TouchableOpacity>
               <Text className="text-emerald-600 font-bold">Inicia Sesión</Text>
             </TouchableOpacity>

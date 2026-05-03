@@ -13,6 +13,7 @@ interface AuthContextType {
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: (idToken: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -65,6 +66,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(user);
   }
 
+  async function signInWithGoogle(idToken: string) {
+    const response = await client.post('/api/auth/google', { idToken });
+    const { user, token } = response.data;
+    
+    await SecureStore.setItemAsync('user_token', token);
+    await SecureStore.setItemAsync('user_data', JSON.stringify(user));
+    
+    setToken(token);
+    setUser(user);
+  }
+
   async function signOut() {
     await SecureStore.deleteItemAsync('user_token');
     await SecureStore.deleteItemAsync('user_data');
@@ -73,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, token, isLoading, signIn, signUp, signInWithGoogle, signOut }}>
       {children}
     </AuthContext.Provider>
   );
