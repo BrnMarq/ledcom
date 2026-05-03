@@ -59,3 +59,6 @@ This is a monorepo consisting of two main directories:
 - **Never** hardcode secrets or API keys. Always use `process.env`.
 - For the mobile app, environment variables must be prefixed with `EXPO_PUBLIC_` (e.g., `EXPO_PUBLIC_API_URL`).
 - Do not commit physical media files (images, audio) generated during tests. Always mock AI/File behaviors during Jest testing.
+
+## 🤖 General Rules
+- **CRITICAL**: Do NOT commit code unless the user explicitly tells you to commit.
