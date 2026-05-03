@@ -21,11 +21,14 @@ const storage = process.env.NODE_ENV === 'test'
     });
 
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowedMimeTypes = ['image/jpeg', 'image/png', 'audio/mpeg', 'audio/m4a'];
+  const allowedMimeTypes = [
+    'image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif', // Images
+    'audio/mpeg', 'audio/m4a', 'audio/x-m4a', 'audio/mp4', 'audio/wav', 'audio/aac' // Audio
+  ];
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only JPEG, PNG, MP3, and M4A are allowed.'));
+    cb(new Error(`Invalid file type (${file.mimetype}). Only images and audio files are allowed.`));
   }
 };
 
