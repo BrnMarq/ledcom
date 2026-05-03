@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import * as crypto from 'crypto';
 import { PriceService } from "../../services/PriceService";
 import { MockProvider } from "../../providers/MockProvider";
 import { CoinGeckoProvider } from "../../providers/CoinGeckoProvider";
@@ -18,8 +19,18 @@ export class CronController {
   async triggerDailyPrices(req: Request, res: Response) {
     // Vercel Cron sends a specific authorization header. We check it here to ensure
     // random users can't trigger the daily job multiple times.
-    const authHeader = req.headers.authorization;
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const authHeader = req.headers.authorization || '';
+    const expectedHeader = `Bearer ${process.env.CRON_SECRET}`;
+
+    let isAuthorized = false;
+    if (authHeader.length === expectedHeader.length && expectedHeader.length > 0) {
+      isAuthorized = crypto.timingSafeEqual(
+        Buffer.from(authHeader),
+        Buffer.from(expectedHeader)
+      );
+    }
+
+    if (!isAuthorized) {
       res.status(401).json({ error: "Unauthorized" });
       return;
     }

@@ -2,7 +2,10 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../client';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is not defined');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export class AuthService {
   async register(email: string, password: string) {

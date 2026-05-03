@@ -42,8 +42,16 @@ export class TransactionController {
         return;
       }
 
-      // In a real app, we should verify each accountId belongs to the user.
-      // For simplicity in this bulk import, we assume the client is doing it right or we could add a check.
+      // Verify account ownership
+      const accountIds = Array.from(new Set(transactions.map((tx: any) => tx.accountId)));
+      const accounts = await prisma.account.findMany({
+        where: { id: { in: accountIds }, userId }
+      });
+
+      if (accounts.length !== accountIds.length) {
+        res.status(403).json({ error: 'No autorizado para una o más cuentas' });
+        return;
+      }
       
       const result = await transactionService.createBulkTransactions(transactions);
       res.status(201).json({

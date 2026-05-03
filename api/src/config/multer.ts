@@ -20,4 +20,17 @@ const storage = process.env.NODE_ENV === 'test'
       }
     });
 
-export const upload = multer({ storage: storage });
+const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowedMimeTypes = ['image/jpeg', 'image/png', 'audio/mpeg', 'audio/m4a'];
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only JPEG, PNG, MP3, and M4A are allowed.'));
+  }
+};
+
+export const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB limit
+  fileFilter: fileFilter
+});
