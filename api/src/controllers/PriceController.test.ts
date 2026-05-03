@@ -9,8 +9,8 @@ jest.mock('axios', () => {
       if (url.includes('coingecko')) {
         return Promise.resolve({ data: { bitcoin: { usd: 43000 } } });
       }
-      if (url.includes('bcv.org.ve')) {
-        return Promise.resolve({ data: '<html><body><div id="dolar"><div class="centrado"><strong> 36,25 </strong></div></div></body></html>' });
+      if (url.includes('dolarapi.com')) {
+        return Promise.resolve({ data: { promedio: 36.25 } });
       }
       return Promise.resolve({ data: {} });
     }),
