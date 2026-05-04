@@ -34,7 +34,7 @@
     "plugins": [
       "expo-router",
       "expo-camera",
-      "expo-av",
+      "expo-audio",
       [
         "expo-splash-screen",
         {
