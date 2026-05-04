@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Image, ActivityIndicator, Alert, SafeAreaView } from 'react-native';
 import { CameraView, Camera } from 'expo-camera';
-import { Audio } from 'expo-av';
+import { useAudioRecorder, setAudioModeAsync, requestRecordingPermissionsAsync, RecordingPresets } from 'expo-audio';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import client from '../../../src/api/client';
 import { Camera as CameraIcon, Mic, X, Check, RefreshCw, Volume2 } from 'lucide-react-native';
@@ -19,7 +19,7 @@ export default function ScannerScreen() {
   const [photo, setPhoto] = useState<string | null>(null);
 
   // Audio State
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [audioUri, setAudioUri] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function ScannerScreen() {
       const cameraStatus = await Camera.requestCameraPermissionsAsync();
       setHasCameraPermission(cameraStatus.status === 'granted');
 
-      const audioStatus = await Audio.requestPermissionsAsync();
+      const audioStatus = await requestRecordingPermissionsAsync();
       setHasAudioPermission(audioStatus.status === 'granted');
     })();
   }, []);
@@ -47,14 +47,11 @@ export default function ScannerScreen() {
 
   const startRecording = async () => {
     try {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
+      await setAudioModeAsync({
+        allowsRecording: true,
+        playsInSilentMode: true,
       });
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-      setRecording(recording);
+      recorder.record();
       setMode('AUDIO_RECORDING');
     } catch (err) {
       console.error('Failed to start recording', err);
@@ -62,11 +59,10 @@ export default function ScannerScreen() {
   };
 
   const stopRecording = async () => {
-    if (!recording) return;
+    if (!recorder.isRecording) return;
     try {
-      setRecording(null);
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
+      await recorder.stop();
+      const uri = recorder.uri;
       setAudioUri(uri);
       setMode('PREVIEW');
     } catch (err) {
