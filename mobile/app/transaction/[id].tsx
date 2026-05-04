@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import client from '../../src/api/client';
 import { ArrowLeft, ArrowUpRight, ArrowDownLeft, Calendar, Tag, Info, Receipt } from 'lucide-react-native';

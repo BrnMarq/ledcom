@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Image, ActivityIndicator, Alert, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, Camera } from 'expo-camera';
 import { useAudioRecorder, setAudioModeAsync, requestRecordingPermissionsAsync, RecordingPresets } from 'expo-audio';
 import { useLocalSearchParams, useRouter } from 'expo-router';
