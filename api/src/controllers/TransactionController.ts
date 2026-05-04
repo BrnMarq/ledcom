@@ -10,7 +10,7 @@ const contextService = new ContextService();
 export class TransactionController {
   async create(req: AuthRequest, res: Response) {
     try {
-      const { accountId, symbol, totalValue, type, flow, context, source } = req.body;
+      const { accountId, totalValue, type, flow, context, source } = req.body;
       const userId = req.userId!;
 
       // Check account ownership
@@ -24,7 +24,7 @@ export class TransactionController {
       }
 
       const transaction = await transactionService.createTransaction({
-        accountId, symbol, totalValue, type, flow, context, source
+        accountId, totalValue, type, flow, context, source
       });
       res.status(201).json(transaction);
     } catch (error: any) {
@@ -134,7 +134,6 @@ export class TransactionController {
     try {
       const accountId = parseInt(req.body.accountId as string);
       const userId = req.userId!;
-      const symbol = req.body.symbol as string || "USD";
       const file = req.file;
 
       if (isNaN(accountId)) {
@@ -159,7 +158,7 @@ export class TransactionController {
 
       const type = file.mimetype.startsWith('audio/') ? 'AUDIO' : 'IMAGE';
       
-      const transaction = await contextService.createTransactionFromMedia(accountId, file.path, type, symbol);
+      const transaction = await contextService.createTransactionFromMedia(accountId, file.path, type, account.symbol);
 
       res.status(201).json({
         message: 'Transaction created successfully from media.',

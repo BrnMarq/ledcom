@@ -16,7 +16,6 @@ jest.mock('../services/ContextService', () => {
         createTransactionFromMedia: jest.fn().mockResolvedValue({
           id: 2,
           accountId: 1,
-          symbol: "USD",
           totalValue: 500,
           type: "NEEDS",
           flow: "OUT",
@@ -40,7 +39,6 @@ describe('TransactionController', () => {
     const mockTx = {
       id: 1,
       accountId: 1,
-      symbol: 'BTC-USD',
       totalValue: 50000,
       type: "SAVINGS" as TransactionType,
       flow: "OUT" as TransactionFlow,
@@ -50,13 +48,13 @@ describe('TransactionController', () => {
       date: new Date()
     };
 
-    prismaMock.account.findFirst.mockResolvedValue({ id: 1, userId: 1, name: 'Mock Account', createdAt: new Date() });
+    prismaMock.account.findFirst.mockResolvedValue({ id: 1, userId: 1, name: 'Mock Account', symbol: 'USD', createdAt: new Date() });
     prismaMock.transaction.create.mockResolvedValue(mockTx);
 
     const response = await request(app)
       .post('/api/transactions')
       .set('Authorization', `Bearer ${token}`)
-      .send({ accountId: 1, symbol: 'BTC-USD', totalValue: 50000, type: 'SAVINGS', source: 'BOT' });
+      .send({ accountId: 1, totalValue: 50000, type: 'SAVINGS', source: 'BOT' });
 
     expect(response.status).toBe(201);
     expect(response.body.status).toBe('PENDING_CONTEXT');
@@ -64,11 +62,11 @@ describe('TransactionController', () => {
 
   it('POST /api/transactions/bulk should create multiple transactions', async () => {
     const mockTxs = [
-      { accountId: 1, symbol: 'BTC-USD', totalValue: 50000, type: 'SAVINGS', flow: 'OUT', source: 'BOT' },
-      { accountId: 1, symbol: 'ETH-USD', totalValue: 2500, type: 'SAVINGS', flow: 'OUT', source: 'BOT' }
+      { accountId: 1, totalValue: 50000, type: 'SAVINGS', flow: 'OUT', source: 'BOT' },
+      { accountId: 1, totalValue: 2500, type: 'SAVINGS', flow: 'OUT', source: 'BOT' }
     ];
 
-    prismaMock.account.findMany.mockResolvedValue([{ id: 1, userId: 1, name: 'Mock Account', createdAt: new Date() }]);
+    prismaMock.account.findMany.mockResolvedValue([{ id: 1, userId: 1, name: 'Mock Account', symbol: 'USD', createdAt: new Date() }]);
     prismaMock.transaction.createMany.mockResolvedValue({ count: 2 });
 
     const response = await request(app)
@@ -85,7 +83,6 @@ describe('TransactionController', () => {
     const mockTx = {
       id: 1,
       accountId: 1,
-      symbol: 'BTC-USD',
       totalValue: 50000,
       type: "SAVINGS" as TransactionType,
       flow: "OUT" as TransactionFlow,
@@ -117,12 +114,11 @@ describe('TransactionController', () => {
   });
 
   it('POST /api/transactions/from-media should create a transaction from media upload', async () => {
-    prismaMock.account.findFirst.mockResolvedValue({ id: 1, userId: 1, name: 'Mock Account', createdAt: new Date() });
+    prismaMock.account.findFirst.mockResolvedValue({ id: 1, userId: 1, name: 'Mock Account', symbol: 'USD', createdAt: new Date() });
     const response = await request(app)
       .post('/api/transactions/from-media')
       .set('Authorization', `Bearer ${token}`)
       .field('accountId', '1')
-      .field('symbol', 'USD')
       .attach('file', Buffer.from('fake audio data'), 'test.mp3');
 
     expect(response.status).toBe(201);

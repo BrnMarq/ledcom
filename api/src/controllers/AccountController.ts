@@ -5,12 +5,13 @@ import prisma from '../client';
 export class AccountController {
   async create(req: AuthRequest, res: Response) {
     try {
-      const { name } = req.body;
+      const { name, symbol } = req.body;
       const userId = req.userId!;
       
       const account = await prisma.account.create({
         data: { 
           name,
+          symbol: symbol || 'USD',
           userId
         }
       });

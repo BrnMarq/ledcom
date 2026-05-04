@@ -19,6 +19,7 @@ model User {
 model Account {
   id           Int           @id @default(autoincrement())
   name         String
+  symbol       String        @default("USD")
   user         User          @relation(fields: [userId], references: [id])
   userId       Int
   transactions Transaction[]
@@ -47,7 +48,6 @@ model Transaction {
   id          Int      @id @default(autoincrement())
   accountId   Int
   account     Account  @relation(fields: [accountId], references: [id])
-  symbol      String   // E.g., USD
   totalValue  Float    @default(0) // Total fiat impact
   type        TransactionType
   flow        TransactionFlow @default(OUT)

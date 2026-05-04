@@ -152,7 +152,7 @@ export class ContextService {
     accountId: number,
     fileUrl: string,
     fileType: string,
-    defaultSymbol: string = "USD",
+    defaultSymbol: string = "USD", // Keeping argument for potential future use or backward compat, but won't save to transaction table.
   ) {
     console.log(`[ContextService] Starting AI processing for new media...`);
 
@@ -164,7 +164,6 @@ export class ContextService {
     const transaction = await prisma.transaction.create({
       data: {
         accountId,
-        symbol: defaultSymbol,
         totalValue: aiResult.totalValue > 0 ? aiResult.totalValue : 0,
         type: (aiResult.type as TransactionType) || "WANTS",
         flow: (aiResult.flow as TransactionFlow) || "OUT",

@@ -12,7 +12,6 @@ describe('TransactionService', () => {
   it('should create a transaction with context and set status COMPLETED', async () => {
     const newTxData = {
       accountId: 1,
-      symbol: 'BTC-USD',
       totalValue: 50000,
       type: "SAVINGS" as TransactionType,
       flow: "OUT" as TransactionFlow,
@@ -27,7 +26,6 @@ describe('TransactionService', () => {
     expect(prismaMock.transaction.create).toHaveBeenCalledWith({
       data: {
         accountId: 1,
-        symbol: 'BTC-USD',
         totalValue: 50000,
         type: 'SAVINGS',
         flow: 'OUT',
@@ -42,7 +40,6 @@ describe('TransactionService', () => {
   it('should create a transaction without context and set status PENDING_CONTEXT', async () => {
     const newTxData = {
       accountId: 1,
-      symbol: 'ETH-USD',
       totalValue: 25000,
       type: "SAVINGS" as TransactionType,
       flow: "OUT" as TransactionFlow,
@@ -56,7 +53,6 @@ describe('TransactionService', () => {
     expect(prismaMock.transaction.create).toHaveBeenCalledWith({
       data: {
         accountId: 1,
-        symbol: 'ETH-USD',
         totalValue: 25000,
         type: 'SAVINGS',
         flow: 'OUT',

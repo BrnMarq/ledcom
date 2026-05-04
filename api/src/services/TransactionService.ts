@@ -3,7 +3,6 @@ import prisma from '../client';
 
 interface CreateTransactionDTO {
   accountId: number;
-  symbol: string;
   totalValue?: number; // Optional, might be updated later via context
   type: TransactionType;
   flow?: TransactionFlow;
@@ -16,7 +15,6 @@ export class TransactionService {
     return prisma.transaction.create({
       data: {
         accountId: data.accountId,
-        symbol: data.symbol,
         totalValue: data.totalValue || 0,
         type: data.type,
         flow: data.flow || "OUT",
@@ -30,7 +28,6 @@ export class TransactionService {
   async createBulkTransactions(data: CreateTransactionDTO[]) {
     const transactions = data.map(tx => ({
       accountId: tx.accountId,
-      symbol: tx.symbol,
       totalValue: tx.totalValue || 0,
       type: tx.type,
       flow: tx.flow || "OUT",
@@ -57,7 +54,7 @@ export class TransactionService {
     return prisma.transaction.findMany({
       where: { accountId },
       orderBy: { date: 'desc' },
-      include: { media: true, items: true } // Include media and items in results
+      include: { media: true, items: true, account: { select: { symbol: true } } } // Include media, items and account symbol
     });
   }
 
@@ -67,7 +64,7 @@ export class TransactionService {
         id,
         account: { userId }
       },
-      include: { media: true, items: true }
+      include: { media: true, items: true, account: { select: { symbol: true } } }
     });
   }
 
