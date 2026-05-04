@@ -34,6 +34,11 @@ enum TransactionType {
   SAVINGS
 }
 
+enum TransactionSource {
+  MANUAL
+  BOT
+}
+
 enum TransactionFlow {
   IN
   OUT
@@ -50,24 +55,8 @@ model Transaction {
   
   // Updated Context Fields
   context     String?
-  // status      String   @default("PENDING_CONTEXT") // Keeping status for now as requested
-  
-  media       TransactionMedia[]
-  items       TransactionItem[]
-}
-
-model Transaction {
-  id          Int      @id @default(autoincrement())
-  accountId   Int
-  account     Account  @relation(fields: [accountId], references: [id])
-  totalValue  Float    @default(0) // Total fiat impact
-  type        TransactionType
-  flow        TransactionFlow @default(OUT)
-  date        DateTime @default(now())
-  
-  // Updated Context Fields
-  context     String?
   status      String   @default("PENDING_CONTEXT")
+  source      TransactionSource @default(MANUAL)
   
   media       TransactionMedia[]
   items       TransactionItem[]
