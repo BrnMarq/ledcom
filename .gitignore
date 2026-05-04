@@ -38,11 +38,6 @@ Thumbs.db
 
 # User Uploads
 uploads/
-*.jpg
-*.jpeg
-*.png
-*.mp3
-*.wav
 
 # dependencies
 node_modules/
