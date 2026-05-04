@@ -21,7 +21,6 @@ jest.mock('../services/ContextService', () => {
           flow: "OUT",
           context: "Mock Context",
           status: "COMPLETED",
-          source: "MANUAL",
           items: [],
           media: []
         })
@@ -35,7 +34,7 @@ describe('TransactionController', () => {
     jest.clearAllMocks();
   });
 
-  it('POST /api/transactions should create a BOT transaction without context', async () => {
+  it('POST /api/transactions should create a transaction without context', async () => {
     const mockTx = {
       id: 1,
       accountId: 1,
@@ -44,7 +43,6 @@ describe('TransactionController', () => {
       flow: "OUT" as TransactionFlow,
       context: null,
       status: 'PENDING_CONTEXT',
-      source: "BOT" as TransactionSource,
       date: new Date()
     };
 
@@ -54,7 +52,7 @@ describe('TransactionController', () => {
     const response = await request(app)
       .post('/api/transactions')
       .set('Authorization', `Bearer ${token}`)
-      .send({ accountId: 1, totalValue: 50000, type: 'SAVINGS', source: 'BOT' });
+      .send({ accountId: 1, totalValue: 50000, type: 'SAVINGS' });
 
     expect(response.status).toBe(201);
     expect(response.body.status).toBe('PENDING_CONTEXT');
@@ -62,8 +60,8 @@ describe('TransactionController', () => {
 
   it('POST /api/transactions/bulk should create multiple transactions', async () => {
     const mockTxs = [
-      { accountId: 1, totalValue: 50000, type: 'SAVINGS', flow: 'OUT', source: 'BOT' },
-      { accountId: 1, totalValue: 2500, type: 'SAVINGS', flow: 'OUT', source: 'BOT' }
+      { accountId: 1, totalValue: 50000, type: 'SAVINGS', flow: 'OUT' },
+      { accountId: 1, totalValue: 2500, type: 'SAVINGS', flow: 'OUT' }
     ];
 
     prismaMock.account.findMany.mockResolvedValue([{ id: 1, userId: 1, name: 'Mock Account', symbol: 'USD', createdAt: new Date() }]);
@@ -77,40 +75,6 @@ describe('TransactionController', () => {
     expect(response.status).toBe(201);
     expect(response.body.message).toBe('Transactions successfully imported.');
     expect(response.body.count).toBe(2);
-  });
-
-  it('POST /api/transactions/:id/context should accept media upload', async () => {
-    const mockTx = {
-      id: 1,
-      accountId: 1,
-      totalValue: 50000,
-      type: "SAVINGS" as TransactionType,
-      flow: "OUT" as TransactionFlow,
-      context: null,
-      status: 'PENDING_CONTEXT',
-      source: "BOT" as TransactionSource,
-      date: new Date()
-    };
-    const mockMedia = {
-      id: 1,
-      url: '/uploads/dummy.jpg',
-      type: 'IMAGE',
-      transactionId: 1,
-      createdAt: new Date()
-    };
-
-    prismaMock.transaction.findFirst.mockResolvedValue(mockTx as any);
-    prismaMock.transactionMedia.create.mockResolvedValue(mockMedia);
-
-    // Using supertest's attach to simulate a file upload
-    const response = await request(app)
-      .post('/api/transactions/1/context')
-      .set('Authorization', `Bearer ${token}`)
-      .attach('file', Buffer.from('fake image data'), 'test.jpg');
-
-    expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty('message', 'Media uploaded successfully. Context processing started and completed.');
-    expect(response.body).toHaveProperty('mediaId', 1);
   });
 
   it('POST /api/transactions/from-media should create a transaction from media upload', async () => {

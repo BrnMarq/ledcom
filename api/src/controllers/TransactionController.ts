@@ -10,7 +10,7 @@ const contextService = new ContextService();
 export class TransactionController {
   async create(req: AuthRequest, res: Response) {
     try {
-      const { accountId, totalValue, type, flow, context, source } = req.body;
+      const { accountId, totalValue, type, flow, context } = req.body;
       const userId = req.userId!;
 
       // Check account ownership
@@ -24,7 +24,18 @@ export class TransactionController {
       }
 
       const transaction = await transactionService.createTransaction({
-        accountId, totalValue, type, flow, context, source
+        accountId, totalValue, type, flow, context
+      });
+      res.status(201).json(transaction);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async createFromMedia(req: AuthRequest, res: Response) {
+
+      const transaction = await transactionService.createTransaction({
+        accountId, totalValue, type, flow, context
       });
       res.status(201).json(transaction);
     } catch (error: any) {
@@ -84,47 +95,6 @@ export class TransactionController {
         return;
       }
       res.json(transaction);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-
-  async addContextMedia(req: AuthRequest, res: Response) {
-    try {
-      const transactionId = parseInt(req.params.id as string);
-      const userId = req.userId!;
-      const file = req.file;
-
-      if (!file) {
-        res.status(400).json({ error: 'No file uploaded' });
-        return;
-      }
-
-      // Check transaction ownership
-      const transaction = await prisma.transaction.findFirst({
-        where: { id: transactionId, account: { userId } }
-      });
-
-      if (!transaction) {
-        res.status(403).json({ error: 'No autorizado para esta transacción' });
-        return;
-      }
-
-      // Determine type (simple logic for now)
-      const type = file.mimetype.startsWith('audio/') ? 'AUDIO' : 'IMAGE';
-      
-      // Save Media Record
-      const media = await transactionService.addMedia(transactionId, file.path, type);
-
-      // Trigger Async Processing (Mock AI)
-      await contextService.processMedia(media.id, transactionId);
-
-      res.status(201).json({
-        message: 'Media uploaded successfully. Context processing started and completed.',
-        mediaId: media.id,
-        status: 'COMPLETED'
-      });
-
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

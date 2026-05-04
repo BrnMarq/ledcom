@@ -106,48 +106,6 @@ export class ContextService {
     };
   }
 
-  async processMedia(mediaId: number, transactionId: number) {
-    console.log(
-      `[ContextService] Starting AI processing for Media #${mediaId}...`,
-    );
-
-    try {
-      const media = await prisma.transactionMedia.findUnique({
-        where: { id: mediaId },
-      });
-      if (!media) return;
-
-      const aiResult = await this.processWithGemini(media.url, media.type);
-
-      console.log(`[ContextService] Context generated: "${aiResult.context}"`);
-
-      // Update the Transaction
-      await prisma.transaction.update({
-        where: { id: transactionId },
-        data: {
-          context: aiResult.context,
-          totalValue: aiResult.totalValue > 0 ? aiResult.totalValue : undefined,
-          status: "COMPLETED",
-          items:
-            aiResult.items && aiResult.items.length > 0
-              ? {
-                  create: aiResult.items,
-                }
-              : undefined,
-        },
-      });
-
-      console.log(
-        `[ContextService] Transaction #${transactionId} updated successfully.`,
-      );
-    } catch (error) {
-      console.error(
-        `[ContextService] Error processing media #${mediaId}:`,
-        error,
-      );
-    }
-  }
-
   async createTransactionFromMedia(
     accountId: number,
     fileUrl: string,
@@ -169,7 +127,6 @@ export class ContextService {
         flow: (aiResult.flow as TransactionFlow) || "OUT",
         context: aiResult.context,
         status: "COMPLETED",
-        source: "MANUAL",
         items:
           aiResult.items && aiResult.items.length > 0
             ? {

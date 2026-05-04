@@ -7,7 +7,6 @@ interface CreateTransactionDTO {
   type: TransactionType;
   flow?: TransactionFlow;
   context?: string;
-  source?: TransactionSource;
 }
 
 export class TransactionService {
@@ -19,8 +18,7 @@ export class TransactionService {
         type: data.type,
         flow: data.flow || "OUT",
         context: data.context || null,
-        status: data.context ? "COMPLETED" : "PENDING_CONTEXT",
-        source: data.source || "MANUAL"
+        status: data.context ? "COMPLETED" : "PENDING_CONTEXT"
       }
     });
   }
@@ -32,8 +30,7 @@ export class TransactionService {
       type: tx.type,
       flow: tx.flow || "OUT",
       context: tx.context || null,
-      status: tx.context ? "COMPLETED" : "PENDING_CONTEXT",
-      source: tx.source || "MANUAL"
+      status: tx.context ? "COMPLETED" : "PENDING_CONTEXT"
     }));
 
     return prisma.transaction.createMany({
@@ -65,17 +62,6 @@ export class TransactionService {
         account: { userId }
       },
       include: { media: true, items: true, account: { select: { symbol: true } } }
-    });
-  }
-
-  // New method to handle media attachment
-  async addMedia(transactionId: number, fileUrl: string, fileType: string) {
-    return prisma.transactionMedia.create({
-      data: {
-        transactionId,
-        url: fileUrl,
-        type: fileType
-      }
     });
   }
 }
