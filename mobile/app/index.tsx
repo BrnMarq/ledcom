@@ -152,13 +152,26 @@ export default function AccountsScreen() {
             />
 
             <Text className="text-gray-700 font-bold mb-2 ml-1">Moneda (Símbolo)</Text>
-            <TextInput
-              className="bg-gray-50 p-4 rounded-2xl border border-gray-200 text-gray-800 mb-6"
-              placeholder="Ej. USD, VES, EUR"
-              value={newAccountSymbol}
-              onChangeText={setNewAccountSymbol}
-              autoCapitalize="characters"
-            />
+            <View className="flex-row gap-2 mb-6">
+              {['USD', 'VES', 'EUR'].map((currency) => (
+                <TouchableOpacity
+                  key={currency}
+                  activeOpacity={0.7}
+                  onPress={() => setNewAccountSymbol(currency)}
+                  className={`flex-1 px-4 py-3 rounded-2xl border items-center justify-center ${
+                    newAccountSymbol === currency 
+                      ? 'bg-emerald-500 border-emerald-500' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}
+                >
+                  <Text className={`font-bold ${
+                    newAccountSymbol === currency ? 'text-white' : 'text-gray-600'
+                  }`}>
+                    {currency}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
             <View className="flex-row justify-end space-x-3">
               <TouchableOpacity
