@@ -16,6 +16,7 @@ export default function AccountsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newAccountName, setNewAccountName] = useState('');
+  const [newAccountSymbol, setNewAccountSymbol] = useState('USD');
   const [isCreating, setIsCreating] = useState(false);
   
   const router = useRouter();
@@ -41,9 +42,10 @@ export default function AccountsScreen() {
     
     setIsCreating(true);
     try {
-      await client.post('/api/accounts', { name: newAccountName.trim() });
+      await client.post('/api/accounts', { name: newAccountName.trim(), symbol: newAccountSymbol.trim() || 'USD' });
       setIsModalVisible(false);
       setNewAccountName('');
+      setNewAccountSymbol('USD');
       fetchAccounts();
     } catch (error: any) {
       const message = error.response?.data?.error || 'Error al crear la cuenta';
@@ -133,6 +135,7 @@ export default function AccountsScreen() {
         onRequestClose={() => {
           setIsModalVisible(false);
           setNewAccountName('');
+          setNewAccountSymbol('USD');
         }}
       >
         <View className="flex-1 justify-center items-center bg-black/50 p-4">
@@ -141,11 +144,20 @@ export default function AccountsScreen() {
             
             <Text className="text-gray-700 font-bold mb-2 ml-1">Nombre</Text>
             <TextInput
-              className="bg-gray-50 p-4 rounded-2xl border border-gray-200 text-gray-800 mb-6"
+              className="bg-gray-50 p-4 rounded-2xl border border-gray-200 text-gray-800 mb-4"
               placeholder="Ej. Banesco, Binance..."
               value={newAccountName}
               onChangeText={setNewAccountName}
               autoFocus
+            />
+
+            <Text className="text-gray-700 font-bold mb-2 ml-1">Moneda (Símbolo)</Text>
+            <TextInput
+              className="bg-gray-50 p-4 rounded-2xl border border-gray-200 text-gray-800 mb-6"
+              placeholder="Ej. USD, VES, EUR"
+              value={newAccountSymbol}
+              onChangeText={setNewAccountSymbol}
+              autoCapitalize="characters"
             />
 
             <View className="flex-row justify-end space-x-3">
@@ -154,6 +166,7 @@ export default function AccountsScreen() {
                 onPress={() => {
                   setIsModalVisible(false);
                   setNewAccountName('');
+                  setNewAccountSymbol('USD');
                 }}
                 disabled={isCreating}
               >

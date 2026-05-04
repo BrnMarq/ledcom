@@ -14,7 +14,6 @@ interface TransactionItem {
 
 interface Transaction {
   id: number;
-  symbol: string;
   totalValue: number;
   type: string;
   flow: 'IN' | 'OUT';
@@ -23,6 +22,7 @@ interface Transaction {
   status: string;
   source: string;
   items: TransactionItem[];
+  account: { symbol: string };
 }
 
 export default function TransactionDetailScreen() {
@@ -89,7 +89,7 @@ export default function TransactionDetailScreen() {
           {transaction.flow === 'IN' ? '+' : '-'}${transaction.totalValue.toFixed(2)}
         </Text>
         <View className="bg-white/20 px-3 py-1 rounded-full mt-4">
-            <Text className="text-white font-bold text-xs">{transaction.symbol}</Text>
+            <Text className="text-white font-bold text-xs">{transaction.account?.symbol || 'USD'}</Text>
         </View>
       </View>
 

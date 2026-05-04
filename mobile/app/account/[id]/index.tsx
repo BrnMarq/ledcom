@@ -11,13 +11,13 @@ interface TransactionItem {
 
 interface Transaction {
   id: number;
-  symbol: string;
   totalValue: number;
   type: string;
   flow: 'IN' | 'OUT';
   date: string;
   context: string;
   items?: TransactionItem[];
+  account: { symbol: string };
 }
 
 export default function HistoryScreen() {
@@ -100,7 +100,7 @@ export default function HistoryScreen() {
                 <Text className={`font-black text-lg ${item.flow === 'IN' ? 'text-emerald-600' : 'text-red-600'}`}>
                   {item.flow === 'IN' ? '+' : '-'}${item.totalValue.toFixed(2)}
                 </Text>
-                <Text className="text-gray-400 text-[10px] text-right font-bold">{item.symbol}</Text>
+                <Text className="text-gray-400 text-[10px] text-right font-bold">{item.account?.symbol || 'USD'}</Text>
               </View>
             </View>
 

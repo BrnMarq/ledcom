@@ -81,7 +81,6 @@ export default function ScannerScreen() {
     setIsProcessing(true);
     const formData = new FormData();
     formData.append('accountId', id as string);
-    formData.append('symbol', 'USD');
     
     const fileType = photo ? 'image/jpeg' : 'audio/m4a';
     const fileName = photo ? 'receipt.jpg' : 'voice.m4a';
