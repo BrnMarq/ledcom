@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import client from '../../src/api/client';
 import { ArrowLeft, ArrowUpRight, ArrowDownLeft, Calendar, Tag, Info, Receipt, Edit2 } from 'lucide-react-native';
 import { formatCurrency } from '../../src/utils/currency';
@@ -14,11 +14,6 @@ interface TransactionItem {
   totalPrice: number;
 }
 
-interface Account {
-  id: number;
-  symbol: string;
-}
-
 interface Transaction {
   id: number;
   totalValue: number;
@@ -28,8 +23,7 @@ interface Transaction {
   context: string;
   status: string;
   items: TransactionItem[];
-  account: Account;
-  accountId: number;
+  account: { symbol: string };
 }
 
 export default function TransactionDetailScreen() {
@@ -38,11 +32,9 @@ export default function TransactionDetailScreen() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchTransaction();
-    }, [id])
-  );
+  useEffect(() => {
+    fetchTransaction();
+  }, [id]);
 
   const fetchTransaction = async () => {
     try {
@@ -52,17 +44,6 @@ export default function TransactionDetailScreen() {
       console.error('Error fetching transaction detail:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleBack = () => {
-    if (transaction?.accountId) {
-      router.replace({
-        pathname: "/account/[id]",
-        params: { id: transaction.accountId, refresh: "true" }
-      });
-    } else {
-      router.back();
     }
   };
 
@@ -92,7 +73,7 @@ export default function TransactionDetailScreen() {
         <Text className="text-gray-500 text-lg">No se encontró la transacción.</Text>
         <TouchableOpacity 
           className="mt-4 bg-emerald-500 px-6 py-3 rounded-xl"
-          onPress={handleBack}
+          onPress={() => router.back()}
         >
           <Text className="text-white font-bold">Volver</Text>
         </TouchableOpacity>
@@ -104,12 +85,6 @@ export default function TransactionDetailScreen() {
     <ScrollView className="flex-1 bg-gray-50">
       {/* Header Summary */}
       <View className={`p-8 pb-12 items-center relative ${transaction.flow === 'IN' ? 'bg-emerald-500' : 'bg-red-500'}`}>
-        <TouchableOpacity 
-          className="absolute top-12 left-6 bg-white/20 p-2 rounded-full" 
-          onPress={handleBack}
-        >
-          <ArrowLeft color="#fff" size={20} />
-        </TouchableOpacity>
         <TouchableOpacity 
           className="absolute top-12 right-6 bg-white/20 p-2 rounded-full" 
           onPress={() => router.push(`/transaction/${id}/edit`)}
