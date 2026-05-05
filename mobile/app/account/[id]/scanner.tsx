@@ -65,7 +65,10 @@ export default function ScannerScreen() {
       const audioStatus = await requestRecordingPermissionsAsync();
       setHasAudioPermission(audioStatus.status === "granted");
       if (audioStatus.status !== "granted") {
-        Alert.alert("Permiso denegado", "Se requiere acceso al micrófono para grabar audio.");
+        Alert.alert(
+          "Permiso denegado",
+          "Se requiere acceso al micrófono para grabar audio.",
+        );
         return;
       }
     }
@@ -75,44 +78,47 @@ export default function ScannerScreen() {
         allowsRecording: true,
         playsInSilentMode: true,
       });
+      await recorder.prepareToRecordAsync();
       recorder.record();
       setMode("AUDIO_RECORDING");
     } catch (err) {
       console.error("Failed to start recording", err);
-    }
-  };
-
-  const takePicture = async () => {
-    if (cameraRef.current) {
-      try {
-        const photo = await cameraRef.current.takePictureAsync({
-          quality: 0.5,
-        });
-        setPhoto(photo.uri);
-        setMode("PREVIEW");
-      } catch (e) {
-        console.error("Camera Error:", e);
-        Alert.alert("Error", "No se pudo tomar la foto");
-      }
+      Alert.alert("Error", "No se pudo iniciar la grabación.");
     }
   };
 
   const stopRecording = async () => {
-    if (!recorder.isRecording) return;
     try {
+      // Immediate UI feedback
+      console.log("Stopping recording...");
       await recorder.stop();
-      const uri = recorder.uri;
-      setAudioUri(uri);
-      setMode("PREVIEW");
+      
+      const status = recorder.getStatus();
+      const finalUri = recorder.uri || status.url;
+      console.log("Recording stopped, URI:", finalUri);
+      
+      if (finalUri) {
+        setAudioUri(finalUri);
+        setMode("PREVIEW");
+      } else {
+        Alert.alert("Error", "No se pudo obtener la ubicación del audio guardado.");
+        setMode("MENU");
+      }
     } catch (err) {
       console.error("Failed to stop recording", err);
+      Alert.alert("Error", "No se pudo detener la grabación.");
+      // Fallback to menu if it fails to stop properly
+      setMode("MENU");
     }
   };
 
   const uploadMedia = async () => {
-    const uri = photo || audioUri;
-    if (!uri) return;
-
+    const uri = photo || audioUri || recorder.uri;
+    if (!uri) {
+      Alert.alert("Error", "No hay archivo para subir.");
+      return;
+    }
+    
     setIsProcessing(true);
     const formData = new FormData();
     formData.append("accountId", id as string);
