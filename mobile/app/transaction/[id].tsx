@@ -3,7 +3,7 @@ import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import client from '../../src/api/client';
-import { ArrowLeft, ArrowUpRight, ArrowDownLeft, Calendar, Tag, Info, Receipt } from 'lucide-react-native';
+import { ArrowLeft, ArrowUpRight, ArrowDownLeft, Calendar, Tag, Info, Receipt, Edit2 } from 'lucide-react-native';
 import { formatCurrency } from '../../src/utils/currency';
 
 interface TransactionItem {
@@ -84,8 +84,14 @@ export default function TransactionDetailScreen() {
   return (
     <ScrollView className="flex-1 bg-gray-50">
       {/* Header Summary */}
-      <View className={`p-8 pb-12 items-center ${transaction.flow === 'IN' ? 'bg-emerald-500' : 'bg-red-500'}`}>
-        <Text className="text-white/80 font-bold uppercase tracking-widest text-xs mb-2">Monto Total</Text>
+      <View className={`p-8 pb-12 items-center relative ${transaction.flow === 'IN' ? 'bg-emerald-500' : 'bg-red-500'}`}>
+        <TouchableOpacity 
+          className="absolute top-12 right-6 bg-white/20 p-2 rounded-full" 
+          onPress={() => router.push(`/transaction/${id}/edit`)}
+        >
+          <Edit2 color="#fff" size={20} />
+        </TouchableOpacity>
+        <Text className="text-white/80 font-bold uppercase tracking-widest text-xs mb-2 mt-4">Monto Total</Text>
         <Text className="text-white text-5xl font-black">
           {transaction.flow === 'IN' ? '+' : '-'}{formatCurrency(transaction.totalValue, transaction.account?.symbol)}
         </Text>

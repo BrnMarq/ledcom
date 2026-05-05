@@ -8,5 +8,6 @@ const controller = new TransactionController();
 router.post("/", upload.single("file"), controller.createFromMedia);
 router.get("/account/:id", controller.getByAccount);
 router.get("/:id", controller.getById);
+router.patch("/:id", controller.update);
 
 export default router;

@@ -82,4 +82,48 @@ describe("TransactionService", () => {
       expect(result).toEqual(mockTransaction);
     });
   });
+
+  describe("updateTransaction", () => {
+    it("should update a transaction and its items if authorized", async () => {
+      const transactionId = 101;
+      const userId = 10;
+      const data = {
+        totalValue: 60,
+        items: [{ id: 1, name: "Apple", quantity: 1, unitPrice: 10, totalPrice: 10 }, { name: "Orange", quantity: 1, unitPrice: 50, totalPrice: 50 }]
+      };
+
+      const mockTransaction = { id: transactionId, accountId: 1, totalValue: 50, type: "WANTS", flow: "OUT", date: new Date(), status: "COMPLETED", context: "", media: [], items: [], account: { symbol: "USD" } };
+
+      prismaMock.transaction.findFirst.mockResolvedValue(mockTransaction as any);
+      prismaMock.transaction.update.mockResolvedValue({ ...mockTransaction, totalValue: 60 } as any);
+
+      const result = await transactionService.updateTransaction(transactionId, userId, data as any);
+
+      expect(prismaMock.transaction.findFirst).toHaveBeenCalledWith({
+        where: { id: transactionId, account: { userId } }
+      });
+      expect(prismaMock.transaction.update).toHaveBeenCalledWith({
+        where: { id: transactionId },
+        data: expect.objectContaining({
+          totalValue: 60,
+          items: expect.objectContaining({
+            deleteMany: { id: { notIn: [1] } },
+            upsert: expect.any(Array),
+            create: expect.any(Array)
+          })
+        }),
+        include: expect.any(Object)
+      });
+      expect(result.totalValue).toBe(60);
+    });
+
+    it("should throw an error if transaction not found or not authorized to update", async () => {
+      const transactionId = 101;
+      const userId = 10;
+
+      prismaMock.transaction.findFirst.mockResolvedValue(null);
+
+      await expect(transactionService.updateTransaction(transactionId, userId, {})).rejects.toThrow("Transacción no encontrada o no autorizada");
+    });
+  });
 });

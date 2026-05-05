@@ -1,12 +1,11 @@
-export const formatCurrency = (value: number, symbol: string = 'USD') => {
+export const formatCurrency = (value: number, symbol: string = "USD") => {
   const symbolMap: { [key: string]: string } = {
-    USD: '$',
-    EUR: '€',
-    VES: 'Bs.',
-    COP: 'Bs.',
+    USD: "$",
+    EUR: "€",
+    VES: "Bs.",
   };
 
   const currencySymbol = symbolMap[symbol] || symbol;
 
-  return `${currencySymbol}${value.toFixed(2)}`;
+  return `${value.toFixed(2)}${currencySymbol}`;
 };

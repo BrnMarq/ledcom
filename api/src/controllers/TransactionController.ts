@@ -85,4 +85,26 @@ export class TransactionController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async update(req: AuthRequest, res: Response) {
+    try {
+      const id = parseInt(req.params.id as string);
+      const userId = req.userId!;
+      const data = req.body;
+
+      const updatedTransaction = await transactionService.updateTransaction(
+        id,
+        userId,
+        data,
+      );
+
+      res.json(updatedTransaction);
+    } catch (error: any) {
+      if (error.message === "Transacción no encontrada o no autorizada") {
+        res.status(403).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: error.message });
+      }
+    }
+  }
 }
