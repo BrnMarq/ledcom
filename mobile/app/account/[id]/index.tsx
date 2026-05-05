@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import client from '../../../src/api/client';
 import { Plus, ArrowUpRight, ArrowDownLeft, FileText } from 'lucide-react-native';
 
@@ -21,7 +21,7 @@ interface Transaction {
 }
 
 export default function HistoryScreen() {
-  const { id } = useLocalSearchParams();
+  const { id, refresh } = useLocalSearchParams();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -39,9 +39,11 @@ export default function HistoryScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchHistory();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchHistory();
+    }, [id])
+  );
 
   const onRefresh = () => {
     setRefreshing(true);

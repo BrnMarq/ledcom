@@ -135,7 +135,13 @@ export default function ScannerScreen() {
       });
 
       Alert.alert("¡Excelente!", "IA procesó tu gasto correctamente.", [
-        { text: "Ir al historial", onPress: () => router.back() },
+        { 
+          text: "Ir al historial", 
+          onPress: () => router.replace({
+            pathname: "/account/[id]",
+            params: { id, refresh: "true" }
+          }) 
+        },
       ]);
     } catch (error: any) {
       console.error("Upload error:", error);
