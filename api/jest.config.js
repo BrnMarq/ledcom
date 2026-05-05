@@ -6,6 +6,7 @@ const tsJestTransformCfg = createDefaultPreset().transform;
 module.exports = {
   testEnvironment: "node",
   setupFilesAfterEnv: ['<rootDir>/src/singleton.ts'],
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
   transform: {
     ...tsJestTransformCfg,
   },
