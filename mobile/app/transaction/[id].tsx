@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import client from '../../src/api/client';
 import { ArrowLeft, ArrowUpRight, ArrowDownLeft, Calendar, Tag, Info, Receipt } from 'lucide-react-native';
+import { formatCurrency } from '../../src/utils/currency';
 
 interface TransactionItem {
   id: number;
@@ -86,7 +87,7 @@ export default function TransactionDetailScreen() {
       <View className={`p-8 pb-12 items-center ${transaction.flow === 'IN' ? 'bg-emerald-500' : 'bg-red-500'}`}>
         <Text className="text-white/80 font-bold uppercase tracking-widest text-xs mb-2">Monto Total</Text>
         <Text className="text-white text-5xl font-black">
-          {transaction.flow === 'IN' ? '+' : '-'}${transaction.totalValue.toFixed(2)}
+          {transaction.flow === 'IN' ? '+' : '-'}{formatCurrency(transaction.totalValue, transaction.account?.symbol)}
         </Text>
         <View className="bg-white/20 px-3 py-1 rounded-full mt-4">
             <Text className="text-white font-bold text-xs">{transaction.account?.symbol || 'USD'}</Text>
@@ -143,9 +144,9 @@ export default function TransactionDetailScreen() {
                     <View key={item.id} className={`py-4 flex-row justify-between items-center ${index !== transaction.items.length - 1 ? 'border-b border-gray-50' : ''}`}>
                         <View className="flex-1">
                             <Text className="text-gray-800 font-bold">{item.name}</Text>
-                            <Text className="text-gray-400 text-xs">{item.quantity} x ${item.unitPrice.toFixed(2)}</Text>
+                            <Text className="text-gray-400 text-xs">{item.quantity} x {formatCurrency(item.unitPrice, transaction.account?.symbol)}</Text>
                         </View>
-                        <Text className="text-gray-900 font-black">${item.totalPrice.toFixed(2)}</Text>
+                        <Text className="text-gray-900 font-black">{formatCurrency(item.totalPrice, transaction.account?.symbol)}</Text>
                     </View>
                 ))}
             </View>

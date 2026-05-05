@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshContr
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import client from '../../../src/api/client';
 import { Plus, ArrowUpRight, ArrowDownLeft, FileText } from 'lucide-react-native';
+import { formatCurrency } from '../../../src/utils/currency';
 
 interface TransactionItem {
   name: string;
@@ -100,7 +101,7 @@ export default function HistoryScreen() {
               </View>
               <View>
                 <Text className={`font-black text-lg ${item.flow === 'IN' ? 'text-emerald-600' : 'text-red-600'}`}>
-                  {item.flow === 'IN' ? '+' : '-'}${item.totalValue.toFixed(2)}
+                  {item.flow === 'IN' ? '+' : '-'}{formatCurrency(item.totalValue, item.account?.symbol)}
                 </Text>
                 <Text className="text-gray-400 text-[10px] text-right font-bold">{item.account?.symbol || 'USD'}</Text>
               </View>
@@ -111,7 +112,7 @@ export default function HistoryScreen() {
                 {item.items.map((line, idx) => (
                   <View key={idx} className="flex-row justify-between mb-1">
                     <Text className="text-gray-500 text-xs">• {line.name}</Text>
-                    <Text className="text-gray-600 text-xs font-semibold">${line.totalPrice.toFixed(2)}</Text>
+                    <Text className="text-gray-600 text-xs font-semibold">{formatCurrency(line.totalPrice, item.account?.symbol)}</Text>
                   </View>
                 ))}
               </View>
