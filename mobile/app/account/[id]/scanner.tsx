@@ -198,24 +198,23 @@ export default function ScannerScreen() {
   if (mode === "CAMERA") {
     return (
       <View className="flex-1 bg-black">
-        <CameraView ref={cameraRef} className="flex-1" facing="back">
-          <SafeAreaView className="flex-1 justify-between p-6">
+        <CameraView ref={cameraRef} className="flex-1" facing="back" />
+        <SafeAreaView className="absolute inset-0 justify-between p-6" pointerEvents="box-none">
+          <TouchableOpacity
+            onPress={() => setMode("MENU")}
+            className="bg-white/20 w-12 h-12 rounded-full items-center justify-center"
+          >
+            <X color="#fff" size={24} />
+          </TouchableOpacity>
+          <View className="items-center pb-10" pointerEvents="box-none">
             <TouchableOpacity
-              onPress={() => setMode("MENU")}
-              className="bg-white/20 w-12 h-12 rounded-full items-center justify-center"
+              onPress={takePicture}
+              className="w-20 h-20 bg-white rounded-full border-4 border-emerald-500 justify-center items-center shadow-xl"
             >
-              <X color="#fff" size={24} />
+              <View className="w-16 h-16 bg-white rounded-full border-2 border-emerald-600" />
             </TouchableOpacity>
-            <View className="items-center pb-10">
-              <TouchableOpacity
-                onPress={takePicture}
-                className="w-20 h-20 bg-white rounded-full border-4 border-emerald-500 justify-center items-center shadow-xl"
-              >
-                <View className="w-16 h-16 bg-white rounded-full border-2 border-emerald-600" />
-              </TouchableOpacity>
-            </View>
-          </SafeAreaView>
-        </CameraView>
+          </View>
+        </SafeAreaView>
       </View>
     );
   }
