@@ -3,8 +3,6 @@ import prisma from "../client";
 import { GoogleGenAI } from "@google/genai";
 import * as fs from "fs";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 const SYSTEM_PROMPT = `
 Eres un asistente financiero experto. Analiza este recibo (imagen) o nota de voz (audio). 
 1. Identifica todos los artículos comprados, su cantidad y precio unitario incluyendo el impuesto si es que tiene.
@@ -33,6 +31,7 @@ export class ContextService {
       );
       return this.getMockData(fileType);
     }
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     try {
       let mimeType = fileType === "AUDIO" ? "audio/mpeg" : "image/jpeg";
@@ -104,48 +103,6 @@ export class ContextService {
       type: "WANTS",
       flow: "OUT",
     };
-  }
-
-  async processMedia(mediaId: number, transactionId: number) {
-    console.log(
-      `[ContextService] Starting AI processing for Media #${mediaId}...`,
-    );
-
-    try {
-      const media = await prisma.transactionMedia.findUnique({
-        where: { id: mediaId },
-      });
-      if (!media) return;
-
-      const aiResult = await this.processWithGemini(media.url, media.type);
-
-      console.log(`[ContextService] Context generated: "${aiResult.context}"`);
-
-      // Update the Transaction
-      await prisma.transaction.update({
-        where: { id: transactionId },
-        data: {
-          context: aiResult.context,
-          totalValue: aiResult.totalValue > 0 ? aiResult.totalValue : undefined,
-          status: "COMPLETED",
-          items:
-            aiResult.items && aiResult.items.length > 0
-              ? {
-                  create: aiResult.items,
-                }
-              : undefined,
-        },
-      });
-
-      console.log(
-        `[ContextService] Transaction #${transactionId} updated successfully.`,
-      );
-    } catch (error) {
-      console.error(
-        `[ContextService] Error processing media #${mediaId}:`,
-        error,
-      );
-    }
   }
 
   async createTransactionFromMedia(

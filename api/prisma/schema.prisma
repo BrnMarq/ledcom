@@ -34,11 +34,6 @@ enum TransactionType {
   SAVINGS
 }
 
-enum TransactionSource {
-  MANUAL
-  BOT
-}
-
 enum TransactionFlow {
   IN
   OUT
@@ -56,7 +51,6 @@ model Transaction {
   // Updated Context Fields
   context     String?
   status      String   @default("PENDING_CONTEXT")
-  source      TransactionSource @default(MANUAL)
   
   media       TransactionMedia[]
   items       TransactionItem[]
