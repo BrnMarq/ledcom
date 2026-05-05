@@ -53,7 +53,10 @@ export default function ScannerScreen() {
       const cameraStatus = await Camera.requestCameraPermissionsAsync();
       setHasCameraPermission(cameraStatus.status === "granted");
       if (cameraStatus.status !== "granted") {
-        Alert.alert("Permiso denegado", "Se requiere acceso a la cámara para tomar fotos.");
+        Alert.alert(
+          "Permiso denegado",
+          "Se requiere acceso a la cámara para tomar fotos.",
+        );
         return;
       }
     }
@@ -87,21 +90,39 @@ export default function ScannerScreen() {
     }
   };
 
+  const takePicture = async () => {
+    if (cameraRef.current) {
+      try {
+        const photo = await cameraRef.current.takePictureAsync({
+          quality: 0.5,
+        });
+        setPhoto(photo.uri);
+        setMode("PREVIEW");
+      } catch (e) {
+        console.error("Camera Error:", e);
+        Alert.alert("Error", "No se pudo tomar la foto");
+      }
+    }
+  };
+
   const stopRecording = async () => {
     try {
       // Immediate UI feedback
       console.log("Stopping recording...");
       await recorder.stop();
-      
+
       const status = recorder.getStatus();
       const finalUri = recorder.uri || status.url;
       console.log("Recording stopped, URI:", finalUri);
-      
+
       if (finalUri) {
         setAudioUri(finalUri);
         setMode("PREVIEW");
       } else {
-        Alert.alert("Error", "No se pudo obtener la ubicación del audio guardado.");
+        Alert.alert(
+          "Error",
+          "No se pudo obtener la ubicación del audio guardado.",
+        );
         setMode("MENU");
       }
     } catch (err) {
@@ -118,7 +139,7 @@ export default function ScannerScreen() {
       Alert.alert("Error", "No hay archivo para subir.");
       return;
     }
-    
+
     setIsProcessing(true);
     const formData = new FormData();
     formData.append("accountId", id as string);
@@ -134,19 +155,16 @@ export default function ScannerScreen() {
     });
 
     try {
-      await client.post("/api/transactions/from-media", formData, {
+      await client.post("/api/transactions", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
       Alert.alert("¡Excelente!", "IA procesó tu gasto correctamente.", [
-        { 
-          text: "Ir al historial", 
-          onPress: () => router.replace({
-            pathname: "/account/[id]",
-            params: { id, refresh: "true" }
-          }) 
+        {
+          text: "Ir al historial",
+          onPress: () => router.back(),
         },
       ]);
     } catch (error: any) {
