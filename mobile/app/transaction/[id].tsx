@@ -21,7 +21,6 @@ interface Transaction {
   date: string;
   context: string;
   status: string;
-  source: string;
   items: TransactionItem[];
   account: { symbol: string };
 }
@@ -122,11 +121,6 @@ export default function TransactionDetailScreen() {
                 <View className="flex-row items-center mt-4">
                     <Tag color="#9CA3AF" size={18} />
                     <Text className="text-gray-600 ml-3 text-sm">Categoría: <Text className="font-bold text-emerald-600">{transaction.type}</Text></Text>
-                </View>
-
-                <View className="flex-row items-center mt-4">
-                    <Info color="#9CA3AF" size={18} />
-                    <Text className="text-gray-600 ml-3 text-sm">Fuente: {transaction.source}</Text>
                 </View>
             </View>
         </View>

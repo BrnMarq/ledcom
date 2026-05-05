@@ -126,7 +126,6 @@ export class ContextService {
         flow: (aiResult.flow as TransactionFlow) || "OUT",
         context: aiResult.context,
         status: "COMPLETED",
-        source: "MANUAL",
         items:
           aiResult.items && aiResult.items.length > 0
             ? {
