@@ -60,6 +60,16 @@
       "eas": {
         "projectId": "093ef977-2dee-42a9-8f6e-e757d2501d61"
       }
+    },
+    "cli": {
+      "appVersionSource": "remote"
+    },
+    "build": {
+      "development": {},
+      "preview": {},
+      "production": {
+        "autoIncrement": true
+      }
     }
   }
 }
