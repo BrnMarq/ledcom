@@ -95,6 +95,7 @@ export default function ScannerScreen() {
       try {
         const photo = await cameraRef.current.takePictureAsync({
           quality: 0.5,
+          shutterSound: false,
         });
         setPhoto(photo.uri);
         setMode("PREVIEW");
