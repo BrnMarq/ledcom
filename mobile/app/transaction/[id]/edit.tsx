@@ -69,7 +69,7 @@ export default function EditTransactionScreen() {
         context,
         items: items.map((item) => ({
           ...item,
-          totalPrice: (item.quantity || 0) * (item.unitPrice || 0),
+          unitPrice: (item.quantity === 0) ? 0 : (item.totalPrice || 0) / (item.quantity || 1),
         })),
       };
 
@@ -110,17 +110,17 @@ export default function EditTransactionScreen() {
         ...newItems[index],
         [field]: value === "" ? 0 : numValue,
       };
-      // Auto-update total price
-      if (field === "quantity" || field === "unitPrice") {
+      // Auto-update unit price
+      if (field === "quantity" || field === "totalPrice") {
         const q =
           field === "quantity"
             ? parseFloat(value) || 0
             : newItems[index].quantity;
-        const u =
-          field === "unitPrice"
+        const t =
+          field === "totalPrice"
             ? parseFloat(value) || 0
-            : newItems[index].unitPrice;
-        newItems[index].totalPrice = q * u;
+            : newItems[index].totalPrice;
+        newItems[index].unitPrice = q === 0 ? 0 : t / q;
       }
     }
     setItems(newItems);
@@ -301,18 +301,18 @@ export default function EditTransactionScreen() {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-xs text-gray-400 mb-1">Precio U.</Text>
+                  <Text className="text-xs text-gray-400 mb-1">Total</Text>
                   <TextInput
-                    value={item.unitPrice.toString()}
-                    onChangeText={(val) => updateItem(index, "unitPrice", val)}
+                    value={item.totalPrice.toString()}
+                    onChangeText={(val) => updateItem(index, "totalPrice", val)}
                     keyboardType="numeric"
-                    className="bg-gray-50 p-2 rounded-lg text-sm"
+                    className="bg-gray-50 p-2 rounded-lg text-sm font-bold"
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-xs text-gray-400 mb-1">Total</Text>
-                  <Text className="p-2 text-sm font-bold text-gray-800">
-                    ${item.totalPrice.toFixed(2)}
+                  <Text className="text-xs text-gray-400 mb-1">Precio U.</Text>
+                  <Text className="p-2 text-sm text-gray-500">
+                    ${(item.unitPrice || 0).toFixed(2)}
                   </Text>
                 </View>
               </View>
