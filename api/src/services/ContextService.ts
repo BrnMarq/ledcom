@@ -2,23 +2,22 @@ import { TransactionType, TransactionFlow } from "@prisma/client";
 import prisma from "../client";
 import { GoogleGenAI } from "@google/genai";
 import * as fs from "fs";
+import { calculateUnitPrice, calculateTransactionTotal } from "../utils/calculations";
 
 const SYSTEM_PROMPT = `
 Eres un asistente financiero experto. Analiza este recibo (imagen) o nota de voz (audio). 
-1. Identifica todos los artículos comprados, su cantidad y precio unitario incluyendo el impuesto si es que tiene.
-2. Calcula el valor total (totalValue).
-3. Clasifica la transacción (type) estrictamente como 'NEEDS' (necesidades básicas como mercado, renta), 'WANTS' (deseos como café, salidas), o 'SAVINGS' (ahorros o inversiones).
-4. Define el flujo (flow) como 'OUT' (gasto) o 'IN' (ingreso).
-5. IMPORTANTE: Traduce todos los nombres de los artículos y el resumen (context) al ESPAÑOL, sin importar el idioma original del archivo.
+1. Identifica todos los artículos comprados, su cantidad y el precio total pagado por esa cantidad de artículos.
+2. Clasifica la transacción (type) estrictamente como 'NEEDS' (necesidades básicas como mercado, renta), 'WANTS' (deseos como café, salidas), o 'SAVINGS' (ahorros o inversiones).
+3. Define el flujo (flow) como 'OUT' (gasto) o 'IN' (ingreso).
+4. IMPORTANTE: Traduce todos los nombres de los artículos y el resumen (context) al ESPAÑOL, sin importar el idioma original del archivo.
 
 Devuelve ÚNICAMENTE un objeto JSON válido con la siguiente estructura y sin markdown de código:
 {
   "context": "Resumen breve",
-  "totalValue": 10.5,
   "type": "NEEDS",
   "flow": "OUT",
   "items": [
-    { "name": "Cebolla", "quantity": 3, "unitPrice": 0.5, "totalPrice": 1.5 }
+    { "name": "Cebolla", "quantity": 3, "totalPrice": 1.5 }
   ]
 }
 `;
@@ -78,11 +77,10 @@ export class ContextService {
         context:
           "[AI Audio Transcript]: Compré 3 cebollas, un café y una galleta.",
         items: [
-          { name: "Cebolla", quantity: 3, unitPrice: 0.5, totalPrice: 1.5 },
-          { name: "Café", quantity: 1, unitPrice: 3.0, totalPrice: 3.0 },
-          { name: "Galleta", quantity: 1, unitPrice: 1.5, totalPrice: 1.5 },
+          { name: "Cebolla", quantity: 3, totalPrice: 1.5 },
+          { name: "Café", quantity: 1, totalPrice: 3.0 },
+          { name: "Galleta", quantity: 1, totalPrice: 1.5 },
         ],
-        totalValue: 6.0,
         type: "NEEDS",
         flow: "OUT",
       };
@@ -95,11 +93,9 @@ export class ContextService {
         {
           name: "Artículo de recibo",
           quantity: 1,
-          unitPrice: 500.0,
           totalPrice: 500.0,
         },
       ],
-      totalValue: 500.0,
       type: "WANTS",
       flow: "OUT",
     };
@@ -117,19 +113,29 @@ export class ContextService {
 
     console.log(`[ContextService] Context generated: "${aiResult.context}"`);
 
+    // Process items and calculate unit prices and overall total
+    const processedItems = (aiResult.items || []).map((item: any) => ({
+      name: item.name,
+      quantity: item.quantity,
+      totalPrice: item.totalPrice,
+      unitPrice: calculateUnitPrice(item.totalPrice, item.quantity)
+    }));
+
+    const calculatedTotalValue = calculateTransactionTotal(processedItems);
+
     // Create the Transaction with Media and Items all at once
     const transaction = await prisma.transaction.create({
       data: {
         accountId,
-        totalValue: aiResult.totalValue > 0 ? aiResult.totalValue : 0,
+        totalValue: calculatedTotalValue,
         type: (aiResult.type as TransactionType) || "WANTS",
         flow: (aiResult.flow as TransactionFlow) || "OUT",
         context: aiResult.context,
         status: "COMPLETED",
         items:
-          aiResult.items && aiResult.items.length > 0
+          processedItems.length > 0
             ? {
-                create: aiResult.items,
+                create: processedItems,
               }
             : undefined,
         media: {
