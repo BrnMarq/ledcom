@@ -66,9 +66,9 @@ export default function ScannerScreen() {
     }
 
     // Also request media library permission for the thumbnail
-    const { status: mediaStatus } = await MediaLibrary.requestPermissionsAsync(false, ["photo"]);
-    if (mediaStatus === "granted") {
-      try {
+    try {
+      const { status: mediaStatus } = await MediaLibrary.requestPermissionsAsync(false, ["photo"]);
+      if (mediaStatus === "granted") {
         const assets = await MediaLibrary.getAssetsAsync({
           mediaType: ["photo"],
           first: 1,
@@ -77,9 +77,10 @@ export default function ScannerScreen() {
         if (assets.assets.length > 0) {
           setLatestPhotoUri(assets.assets[0].uri);
         }
-      } catch (err) {
-        console.error("Failed to load media assets", err);
       }
+    } catch (err) {
+      console.warn("Failed to request media permissions or load thumbnail:", err);
+      // Fallback gracefully without crashing
     }
 
     setMode("CAMERA");
