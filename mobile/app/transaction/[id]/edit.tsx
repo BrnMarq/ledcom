@@ -14,13 +14,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import client from "../../../src/api/client";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react-native";
+import { formatCurrency } from "../../../src/utils/currency";
 
 interface TransactionItem {
   id?: number;
   name: string;
-  quantity: number;
+  quantity: string;
   unitPrice: number;
-  totalPrice: number;
+  totalPrice: string;
 }
 
 export default function EditTransactionScreen() {
@@ -49,7 +50,15 @@ export default function EditTransactionScreen() {
       setType(t.type);
       setFlow(t.flow);
       setContext(t.context || "");
-      setItems(t.items || []);
+      setItems(
+        t.items
+          ? t.items.map((item: any) => ({
+              ...item,
+              quantity: item.quantity.toString(),
+              totalPrice: item.totalPrice.toString(),
+            }))
+          : [],
+      );
       setSymbol(t.account?.symbol || "USD");
     } catch (error) {
       Alert.alert("Error", "No se pudo cargar la transacción.");
@@ -67,10 +76,16 @@ export default function EditTransactionScreen() {
         type,
         flow,
         context,
-        items: items.map((item) => ({
-          ...item,
-          unitPrice: (item.quantity === 0) ? 0 : (item.totalPrice || 0) / (item.quantity || 1),
-        })),
+        items: items.map((item) => {
+          const q = parseFloat(item.quantity) || 0;
+          const t = parseFloat(item.totalPrice) || 0;
+          return {
+            ...item,
+            quantity: q,
+            totalPrice: t,
+            unitPrice: q === 0 ? 0 : t / q,
+          };
+        }),
       };
 
       await client.patch(`/api/transactions/${id}`, payload);
@@ -88,7 +103,7 @@ export default function EditTransactionScreen() {
   const addItem = () => {
     setItems([
       ...items,
-      { name: "", quantity: 1, unitPrice: 0, totalPrice: 0 },
+      { name: "", quantity: "1", unitPrice: 0, totalPrice: "0" },
     ]);
   };
 
@@ -101,25 +116,24 @@ export default function EditTransactionScreen() {
     if (field === "name") {
       newItems[index].name = value;
     } else {
-      // Allow empty string to permit typing decimals comfortably, but parse when calculating
-      // For a better UX, we'll store the exact string in state if we want to allow typing '0.' but the model has numbers.
-      // Since our state interface expects numbers, we have a small issue where typing "0." gets parsed to "0".
-      // Let's just use simple parsing for now.
-      const numValue = parseFloat(value) || 0;
+      const rawValue = value.replace(/[^0-9.]/g, "");
+      
+      // Update string value directly to allow typing decimals like "1."
       newItems[index] = {
         ...newItems[index],
-        [field]: value === "" ? 0 : numValue,
+        [field]: rawValue,
       };
-      // Auto-update unit price
+
+      // Auto-update unit price for display
       if (field === "quantity" || field === "totalPrice") {
         const q =
           field === "quantity"
-            ? parseFloat(value) || 0
-            : newItems[index].quantity;
+            ? parseFloat(rawValue) || 0
+            : parseFloat(newItems[index].quantity) || 0;
         const t =
           field === "totalPrice"
-            ? parseFloat(value) || 0
-            : newItems[index].totalPrice;
+            ? parseFloat(rawValue) || 0
+            : parseFloat(newItems[index].totalPrice) || 0;
         newItems[index].unitPrice = q === 0 ? 0 : t / q;
       }
     }
@@ -175,7 +189,7 @@ export default function EditTransactionScreen() {
             <TextInput
               value={totalValue}
               onChangeText={setTotalValue}
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
               className="bg-white p-4 rounded-2xl text-2xl font-black text-gray-800 border border-gray-200"
             />
           </View>
@@ -294,25 +308,25 @@ export default function EditTransactionScreen() {
                 <View className="flex-1">
                   <Text className="text-xs text-gray-400 mb-1">Cant.</Text>
                   <TextInput
-                    value={item.quantity.toString()}
+                    value={item.quantity}
                     onChangeText={(val) => updateItem(index, "quantity", val)}
-                    keyboardType="numeric"
+                    keyboardType="decimal-pad"
                     className="bg-gray-50 p-2 rounded-lg text-sm"
                   />
                 </View>
                 <View className="flex-1">
                   <Text className="text-xs text-gray-400 mb-1">Total</Text>
                   <TextInput
-                    value={item.totalPrice.toString()}
+                    value={item.totalPrice}
                     onChangeText={(val) => updateItem(index, "totalPrice", val)}
-                    keyboardType="numeric"
+                    keyboardType="decimal-pad"
                     className="bg-gray-50 p-2 rounded-lg text-sm font-bold"
                   />
                 </View>
                 <View className="flex-1">
                   <Text className="text-xs text-gray-400 mb-1">Precio U.</Text>
                   <Text className="p-2 text-sm text-gray-500">
-                    ${(item.unitPrice || 0).toFixed(2)}
+                    {formatCurrency(item.unitPrice || 0, symbol)}
                   </Text>
                 </View>
               </View>
