@@ -68,11 +68,15 @@ export default function EditTransactionScreen() {
     }
   };
 
+  const computedTotal = items.length > 0 
+    ? items.reduce((sum, item) => sum + (parseFloat(item.totalPrice) || 0), 0)
+    : parseFloat(totalValue) || 0;
+
   const handleSave = async () => {
     setSaving(true);
     try {
       const payload = {
-        totalValue: parseFloat(totalValue) || 0,
+        totalValue: computedTotal,
         type,
         flow,
         context,
@@ -186,12 +190,11 @@ export default function EditTransactionScreen() {
             <Text className="text-gray-500 font-bold text-xs uppercase mb-2">
               Monto Total ({symbol})
             </Text>
-            <TextInput
-              value={totalValue}
-              onChangeText={setTotalValue}
-              keyboardType="decimal-pad"
-              className="bg-white p-4 rounded-2xl text-2xl font-black text-gray-800 border border-gray-200"
-            />
+            <View className="bg-gray-100 p-4 rounded-2xl border border-gray-200">
+              <Text className="text-2xl font-black text-gray-500">
+                {formatCurrency(computedTotal, symbol)}
+              </Text>
+            </View>
           </View>
 
           <View className="mb-6 flex-row gap-4">
