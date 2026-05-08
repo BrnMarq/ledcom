@@ -66,7 +66,7 @@ export default function ScannerScreen() {
     }
 
     // Also request media library permission for the thumbnail
-    const { status: mediaStatus } = await MediaLibrary.requestPermissionsAsync();
+    const { status: mediaStatus } = await MediaLibrary.requestPermissionsAsync(false, ["photo"]);
     if (mediaStatus === "granted") {
       try {
         const assets = await MediaLibrary.getAssetsAsync({
