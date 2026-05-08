@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CameraView, Camera } from "expo-camera";
+import * as ImagePicker from "expo-image-picker";
+import * as MediaLibrary from "expo-media-library";
 import {
   useAudioRecorder,
   setAudioModeAsync,
@@ -24,6 +26,7 @@ import {
   Check,
   RefreshCw,
   Volume2,
+  Image as ImageIcon,
 } from "lucide-react-native";
 
 export default function ScannerScreen() {
@@ -43,6 +46,7 @@ export default function ScannerScreen() {
   // Camera State
   const cameraRef = useRef<any>(null);
   const [photo, setPhoto] = useState<string | null>(null);
+  const [latestPhotoUri, setLatestPhotoUri] = useState<string | null>(null);
 
   // Audio State
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
@@ -60,7 +64,43 @@ export default function ScannerScreen() {
         return;
       }
     }
+
+    // Also request media library permission for the thumbnail
+    const { status: mediaStatus } = await MediaLibrary.requestPermissionsAsync();
+    if (mediaStatus === "granted") {
+      try {
+        const assets = await MediaLibrary.getAssetsAsync({
+          mediaType: ["photo"],
+          first: 1,
+          sortBy: [[MediaLibrary.SortBy.creationTime, false]],
+        });
+        if (assets.assets.length > 0) {
+          setLatestPhotoUri(assets.assets[0].uri);
+        }
+      } catch (err) {
+        console.error("Failed to load media assets", err);
+      }
+    }
+
     setMode("CAMERA");
+  };
+
+  const pickImageFromGallery = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 0.5,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setPhoto(result.assets[0].uri);
+        setMode("PREVIEW");
+      }
+    } catch (e) {
+      console.error("Gallery Error:", e);
+      Alert.alert("Error", "No se pudo seleccionar la imagen de la galería");
+    }
   };
 
   const startRecording = async () => {
@@ -211,11 +251,28 @@ export default function ScannerScreen() {
           </TouchableOpacity>
         </SafeAreaView>
 
-        {/* Bottom-center capture button */}
+        {/* Bottom controls */}
         <View
-          className="absolute bottom-12 left-0 right-0 items-center"
+          className="absolute bottom-12 left-0 right-0 flex-row items-center justify-center px-12"
           pointerEvents="box-none"
         >
+          {/* Gallery Button */}
+          <TouchableOpacity
+            onPress={pickImageFromGallery}
+            className="absolute left-12 w-14 h-14 bg-gray-800 rounded-2xl justify-center items-center overflow-hidden border border-gray-600"
+          >
+            {latestPhotoUri ? (
+              <Image
+                source={{ uri: latestPhotoUri }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+            ) : (
+              <ImageIcon color="#fff" size={24} />
+            )}
+          </TouchableOpacity>
+
+          {/* Capture Button */}
           <TouchableOpacity
             onPress={takePicture}
             className="w-20 h-20 bg-white rounded-full border-4 border-emerald-500 justify-center items-center shadow-xl"
