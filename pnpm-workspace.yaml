@@ -1,10 +1,10 @@
 packages:
-  - 'api'
-  - 'mobile'
+  - "api"
+  - "mobile"
 allowBuilds:
-  '@google/genai': false
-  '@prisma/client': false
-  '@prisma/engines': false
-  prisma: false
-  protobufjs: false
-  unrs-resolver: false
+  "@google/genai": true
+  "@prisma/client": true
+  "@prisma/engines": true
+  prisma: true
+  protobufjs: true
+  unrs-resolver: true
