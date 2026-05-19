@@ -15,21 +15,21 @@ This is a monorepo consisting of two main directories:
 
 ### Backend (`/api`)
 
-- **Install Dependencies**: `npm install` (will automatically run `postinstall` to generate Prisma client).
-- **Run Development Server**: `npm run dev` (starts `nodemon`).
-- **Build**: `npm run build` (runs Prisma generation and compiles TypeScript via `tsc`).
+- **Install Dependencies**: `pnpm install` (will automatically run `postinstall` to generate Prisma client).
+- **Run Development Server**: `pnpm run dev` (starts `nodemon`).
+- **Build**: `pnpm run build` (runs Prisma generation and compiles TypeScript via `tsc`).
 - **Database Push**: `npx prisma db push` (syncs schema to database).
 - **Generate Prisma Client**: `npx prisma generate` (required after schema changes).
-- **Run All Tests**: `npm test` (executes Jest test suite).
+- **Run All Tests**: `pnpm test` (executes Jest test suite).
 - **Run a Single Test**: `npx jest src/path/to/test.ts` (e.g., `npx jest src/services/ContextService.test.ts`).
-- _Note_: Before running tests after making schema changes, always delete the `dist/` directory to prevent duplicate test execution errors (`rm -rf dist && npm test`).
+- _Note_: Before running tests after making schema changes, always delete the `dist/` directory to prevent duplicate test execution errors (`rm -rf dist && pnpm test`).
 
 ### Frontend (`/mobile`)
 
-- **Install Dependencies**: `npm install --legacy-peer-deps` (legacy peer dependencies flag is crucial due to React 19 / Expo 54 mismatch).
-- **Run Development Server**: `npm start` (starts Expo).
+- **Install Dependencies**: `pnpm install` (pnpm automatically resolves workspaces).
+- **Run Development Server**: `pnpm start` (starts Expo).
 - **Run Server with Cleared Cache**: `npx expo start -c` (essential after installing new Babel plugins or NativeWind configuration changes).
-- **Lint**: `npm run lint`.
+- **Lint**: `pnpm run lint`.
 
 ---
 
