@@ -1,9 +1,21 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
-import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
-import client from '../../../src/api/client';
-import { Plus, ArrowUpRight, ArrowDownLeft, FileText } from 'lucide-react-native';
-import { formatCurrency } from '../../../src/utils/currency';
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import client from "../../../src/api/client";
+import {
+  Plus,
+  ArrowUpRight,
+  ArrowDownLeft,
+  FileText,
+} from "lucide-react-native";
+import { formatCurrency } from "../../../src/utils/currency";
 
 interface TransactionItem {
   name: string;
@@ -14,7 +26,7 @@ interface Transaction {
   id: number;
   totalValue: number;
   type: string;
-  flow: 'IN' | 'OUT';
+  flow: "IN" | "OUT";
   date: string;
   context: string;
   items?: TransactionItem[];
@@ -33,7 +45,7 @@ export default function HistoryScreen() {
       const response = await client.get(`/api/transactions/account/${id}`);
       setTransactions(response.data);
     } catch (error) {
-      console.error('Error fetching history:', error);
+      console.error("Error fetching history:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -43,7 +55,7 @@ export default function HistoryScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchHistory();
-    }, [id])
+    }, [id]),
   );
 
   const onRefresh = () => {
@@ -53,10 +65,10 @@ export default function HistoryScreen() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
+    return date.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     });
   };
 
@@ -75,35 +87,49 @@ export default function HistoryScreen() {
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         keyExtractor={(item) => item.id.toString()}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#10B981" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#10B981"
+          />
         }
         renderItem={({ item }) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => router.push(`/transaction/${item.id}`)}
             className="bg-white p-5 rounded-3xl shadow-sm mb-4 border border-gray-100"
           >
             <View className="flex-row items-center mb-2">
-              <View className={`p-2 rounded-full mr-3 ${item.flow === 'IN' ? 'bg-emerald-100' : 'bg-red-100'}`}>
-                {item.flow === 'IN' ? (
+              <View
+                className={`p-2 rounded-full mr-3 ${item.flow === "IN" ? "bg-emerald-100" : "bg-red-100"}`}
+              >
+                {item.flow === "IN" ? (
                   <ArrowDownLeft color="#059669" size={18} />
                 ) : (
                   <ArrowUpRight color="#DC2626" size={18} />
                 )}
               </View>
               <View className="flex-1">
-                <Text className="text-gray-900 font-bold text-base" numberOfLines={1}>
-                  {item.context || 'Transacción'}
+                <Text
+                  className="text-gray-900 font-bold text-base"
+                  numberOfLines={1}
+                >
+                  {item.context || "Transacción"}
                 </Text>
                 <Text className="text-gray-400 text-[10px] font-medium tracking-widest uppercase">
                   {formatDate(item.date)} • {item.type}
                 </Text>
               </View>
               <View>
-                <Text className={`font-black text-lg ${item.flow === 'IN' ? 'text-emerald-600' : 'text-red-600'}`}>
-                  {item.flow === 'IN' ? '+' : '-'}{formatCurrency(item.totalValue, item.account?.symbol)}
+                <Text
+                  className={`font-black text-lg ${item.flow === "IN" ? "text-emerald-600" : "text-red-600"}`}
+                >
+                  {item.flow === "IN" ? "+" : "-"}
+                  {formatCurrency(item.totalValue, item.account?.symbol)}
                 </Text>
-                <Text className="text-gray-400 text-[10px] text-right font-bold">{item.account?.symbol || 'USD'}</Text>
+                <Text className="text-gray-400 text-[10px] text-right font-bold">
+                  {item.account?.symbol || "USD"}
+                </Text>
               </View>
             </View>
 
@@ -112,7 +138,9 @@ export default function HistoryScreen() {
                 {item.items.map((line, idx) => (
                   <View key={idx} className="flex-row justify-between mb-1">
                     <Text className="text-gray-500 text-xs">• {line.name}</Text>
-                    <Text className="text-gray-600 text-xs font-semibold">{formatCurrency(line.totalPrice, item.account?.symbol)}</Text>
+                    <Text className="text-gray-600 text-xs font-semibold">
+                      {formatCurrency(line.totalPrice, item.account?.symbol)}
+                    </Text>
                   </View>
                 ))}
               </View>
@@ -122,10 +150,14 @@ export default function HistoryScreen() {
         ListEmptyComponent={
           <View className="items-center mt-24">
             <View className="bg-gray-100 p-6 rounded-full mb-4">
-               <FileText color="#9CA3AF" size={48} />
+              <FileText color="#9CA3AF" size={48} />
             </View>
-            <Text className="text-gray-500 text-lg font-semibold">Sin transacciones</Text>
-            <Text className="text-gray-400 text-sm mt-1 text-center px-10">Usa el botón inferior para escanear tu primer gasto con IA.</Text>
+            <Text className="text-gray-500 text-lg font-semibold">
+              Sin transacciones
+            </Text>
+            <Text className="text-gray-400 text-sm mt-1 text-center px-10">
+              Usa el botón inferior para escanear tu primer gasto con IA.
+            </Text>
           </View>
         }
       />
