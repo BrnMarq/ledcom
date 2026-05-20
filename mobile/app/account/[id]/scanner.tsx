@@ -18,8 +18,8 @@ import {
 } from "expo-audio";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Sentry from "@sentry/react-native";
-import client from "../../../src/api/client";
-import { logger } from "../../../src/utils/logger";
+import client from "@/src/api/client";
+import { logger } from "@/src/utils/logger";
 import {
   Camera as CameraIcon,
   Mic,

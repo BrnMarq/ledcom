@@ -8,16 +8,16 @@ import {
   RefreshControl,
 } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
-import client from "../../../src/api/client";
+import client from "@/src/api/client";
 import {
   Plus,
   ArrowUpRight,
   ArrowDownLeft,
   FileText,
 } from "lucide-react-native";
-import { formatCurrency } from "../../../src/utils/currency";
+import { formatCurrency } from "@/src/utils/currency";
 import * as Sentry from "@sentry/react-native";
-import { logger } from "../../../src/utils/logger";
+import { logger } from "@/src/utils/logger";
 
 interface TransactionItem {
   name: string;

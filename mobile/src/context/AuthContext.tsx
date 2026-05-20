@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import * as Sentry from '@sentry/react-native';
-import client from '../api/client';
-import { logger } from '../utils/logger';
+import client from '@/src/api/client';
+import { logger } from '@/src/utils/logger';
 
 interface User {
   id: number;

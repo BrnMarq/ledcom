@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../src/context/AuthContext';
+import { useAuth } from '@/src/context/AuthContext';
 import { useRouter, Link } from 'expo-router';
 import { UserPlus, ArrowLeft } from 'lucide-react-native';
 import * as WebBrowser from 'expo-web-browser';

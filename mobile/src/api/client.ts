@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import * as Sentry from "@sentry/react-native";
-import { logger } from "../utils/logger";
+import { logger } from "@/src/utils/logger";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 

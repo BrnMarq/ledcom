@@ -12,11 +12,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import client from "@/src/api/client";
 import * as Sentry from "@sentry/react-native";
-import client from "../../../src/api/client";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react-native";
-import { formatCurrency } from "../../../src/utils/currency";
-import { logger } from "../../../src/utils/logger";
+import { formatCurrency } from "@/src/utils/currency";
+import { logger } from "@/src/utils/logger";
 
 interface TransactionItem {
   id?: number;

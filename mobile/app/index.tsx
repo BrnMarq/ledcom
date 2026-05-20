@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Modal, TextInput, Alert } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import client from '../src/api/client';
+import client from '@/src/api/client';
 import { Wallet, ChevronRight, LogOut, Plus } from 'lucide-react-native';
-import { useAuth } from '../src/context/AuthContext';
+import { useAuth } from '@/src/context/AuthContext';
 import * as Sentry from '@sentry/react-native';
-import { logger } from '../src/utils/logger';
+import { logger } from '@/src/utils/logger';
 
 interface Account {
   id: number;
