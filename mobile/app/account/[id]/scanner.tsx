@@ -18,7 +18,6 @@ import {
 } from "expo-audio";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import client from "../../../src/api/client";
-import * as Sentry from "@sentry/react-native";
 import {
   Camera as CameraIcon,
   Mic,
@@ -65,7 +64,6 @@ export default function ScannerScreen() {
     }
 
     setMode("CAMERA");
-    Sentry.metrics.increment("scanner.camera_opened");
   };
 
   const pickImageFromGallery = async () => {
@@ -79,11 +77,9 @@ export default function ScannerScreen() {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         setPhoto(result.assets[0].uri);
         setMode("PREVIEW");
-        Sentry.metrics.increment("scanner.gallery_picked");
       }
     } catch (e) {
       console.error("Gallery Error:", e);
-      Sentry.captureException(e);
       Alert.alert("Error", "No se pudo seleccionar la imagen de la galería");
     }
   };
@@ -109,10 +105,8 @@ export default function ScannerScreen() {
       await recorder.prepareToRecordAsync();
       recorder.record();
       setMode("AUDIO_RECORDING");
-      Sentry.metrics.increment("scanner.recording_started");
     } catch (err) {
       console.error("Failed to start recording", err);
-      Sentry.captureException(err);
       Alert.alert("Error", "No se pudo iniciar la grabación.");
     }
   };
@@ -126,10 +120,8 @@ export default function ScannerScreen() {
         });
         setPhoto(photo.uri);
         setMode("PREVIEW");
-        Sentry.metrics.increment("scanner.photo_taken");
       } catch (e) {
         console.error("Camera Error:", e);
-        Sentry.captureException(e);
         Alert.alert("Error", "No se pudo tomar la foto");
       }
     }
@@ -148,7 +140,6 @@ export default function ScannerScreen() {
       if (finalUri) {
         setAudioUri(finalUri);
         setMode("PREVIEW");
-        Sentry.metrics.increment("scanner.recording_stopped");
       } else {
         Alert.alert(
           "Error",
@@ -158,7 +149,6 @@ export default function ScannerScreen() {
       }
     } catch (err) {
       console.error("Failed to stop recording", err);
-      Sentry.captureException(err);
       Alert.alert("Error", "No se pudo detener la grabación.");
       // Fallback to menu if it fails to stop properly
       setMode("MENU");
@@ -173,8 +163,6 @@ export default function ScannerScreen() {
     }
 
     setIsProcessing(true);
-    Sentry.metrics.increment("scanner.upload_started");
-    
     const formData = new FormData();
     formData.append("accountId", id as string);
 
@@ -195,8 +183,6 @@ export default function ScannerScreen() {
         },
       });
 
-      Sentry.metrics.increment("scanner.upload_success");
-
       Alert.alert("¡Excelente!", "IA procesó tu gasto correctamente.", [
         {
           text: "Ir al historial",
@@ -205,8 +191,6 @@ export default function ScannerScreen() {
       ]);
     } catch (error: any) {
       console.error("Upload error:", error);
-      Sentry.captureException(error);
-      Sentry.metrics.increment("scanner.upload_error");
       Alert.alert(
         "Error",
         "Hubo un problema al procesar con IA. Revisa tu conexión.",

@@ -13,7 +13,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import client from "../../../src/api/client";
-import * as Sentry from "@sentry/react-native";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react-native";
 import { formatCurrency } from "../../../src/utils/currency";
 
@@ -41,7 +40,6 @@ export default function EditTransactionScreen() {
 
   useEffect(() => {
     fetchTransaction();
-    Sentry.metrics.increment("transaction.edit_opened");
   }, [id]);
 
   const fetchTransaction = async () => {
@@ -63,8 +61,6 @@ export default function EditTransactionScreen() {
       );
       setSymbol(t.account?.symbol || "USD");
     } catch (error) {
-      console.error(error);
-      Sentry.captureException(error);
       Alert.alert("Error", "No se pudo cargar la transacción.");
       router.back();
     } finally {
@@ -78,7 +74,6 @@ export default function EditTransactionScreen() {
 
   const handleSave = async () => {
     setSaving(true);
-    Sentry.metrics.increment("transaction.save_started");
     try {
       const payload = {
         totalValue: computedTotal,
@@ -98,15 +93,11 @@ export default function EditTransactionScreen() {
       };
 
       await client.patch(`/api/transactions/${id}`, payload);
-      Sentry.metrics.increment("transaction.save_success");
-      
       Alert.alert("Éxito", "Transacción actualizada", [
         { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error) {
       console.error(error);
-      Sentry.captureException(error);
-      Sentry.metrics.increment("transaction.save_error");
       Alert.alert("Error", "No se pudo actualizar.");
     } finally {
       setSaving(false);
