@@ -1,5 +1,5 @@
 import axios from "axios";
-import { PriceProvider } from "@/providers/PriceProvider";
+import { PriceProvider } from "./PriceProvider";
 
 export class BinanceProvider implements PriceProvider {
   getProviderName(): string {

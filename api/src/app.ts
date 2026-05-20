@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import pino from 'pino-http';
-import logger from "@/utils/logger";
-import routes from "@/routes";
+import logger from "./utils/logger";
+import routes from "./routes";
 
 const app = express();
 

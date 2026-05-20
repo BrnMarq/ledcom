@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import * as crypto from 'crypto';
-import { PriceService } from "@/services/PriceService";
-import { MockProvider } from "@/providers/MockProvider";
-import { CoinGeckoProvider } from "@/providers/CoinGeckoProvider";
-import { BinanceProvider } from "@/providers/BinanceProvider";
-import { BcvProvider } from "@/providers/BcvProvider";
+import { PriceService } from "../../services/PriceService";
+import { MockProvider } from "../../providers/MockProvider";
+import { CoinGeckoProvider } from "../../providers/CoinGeckoProvider";
+import { BinanceProvider } from "../../providers/BinanceProvider";
+import { BcvProvider } from "../../providers/BcvProvider";
 
 const priceService = new PriceService([
   new MockProvider(),

@@ -1,4 +1,4 @@
-import { MockProvider } from "@/providers/MockProvider";
+import { MockProvider } from "./MockProvider";
 
 describe('MockProvider', () => {
   let provider: MockProvider;

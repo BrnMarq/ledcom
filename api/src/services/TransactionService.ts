@@ -1,6 +1,6 @@
-import prisma from "@/client";
+import prisma from "../client";
 import { TransactionType, TransactionFlow } from "@prisma/client";
-import { calculateUnitPrice, calculateTransactionTotal } from "@/utils/calculations";
+import { calculateUnitPrice, calculateTransactionTotal } from "../utils/calculations";
 
 export interface UpdateTransactionData {
   totalValue?: number;

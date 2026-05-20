@@ -1,6 +1,6 @@
 import request from 'supertest';
-import app from "@/app";
-import { prismaMock } from "@/singleton";
+import app from "../app";
+import { prismaMock } from "../singleton";
 
 // Mock axios so we don't make real network requests in tests
 jest.mock('axios', () => {
