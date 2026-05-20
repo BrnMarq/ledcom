@@ -29,13 +29,19 @@ client.interceptors.response.use(
     if (axios.isAxiosError(error)) {
       const method = error.config?.method?.toUpperCase() || "UNKNOWN METHOD";
       const url = error.config?.url || "UNKNOWN URL";
-      logger.error(`API_URL configured as ${API_URL}`);
-
-      logger.error(`\n=== API ERROR ===\nEndpoint: ${method} ${url}`);
+      let errorMessage = `API ERROR: ${method} ${url}`;
+      let errorContext: Record<string, any> = {
+        endpoint: `${method} ${url}`,
+        apiUrl: API_URL,
+      };
 
       if (error.response) {
-        logger.error(`Status: ${error.response.status}`);
-        logger.error(`Message: ${JSON.stringify(error.response.data)}`);
+        errorMessage += ` | Status: ${error.response.status}`;
+        errorContext = {
+          ...errorContext,
+          status: error.response.status,
+          response: error.response.data,
+        };
         
         Sentry.addBreadcrumb({
           type: "http",
@@ -47,34 +53,26 @@ client.interceptors.response.use(
           }
         });
         
-        Sentry.captureException(error, {
-          extra: {
-            endpoint: `${method} ${url}`,
-            status: error.response.status,
-            response: error.response.data,
-          }
-        });
+        Sentry.captureException(error, { extra: errorContext });
       } else if (error.request) {
-        logger.error("Status: No response received (Network Error)");
-        logger.error(
-          "Check your EXPO_PUBLIC_API_URL or if the backend is running.",
-        );
-        Sentry.captureException(error, {
-          extra: {
-            endpoint: `${method} ${url}`,
-            networkError: true,
-          }
-        });
+        errorMessage += ` | Status: No response received (Network Error)`;
+        errorContext = {
+          ...errorContext,
+          networkError: true,
+          resolution: "Check your EXPO_PUBLIC_API_URL or if the backend is running.",
+        };
+        Sentry.captureException(error, { extra: errorContext });
       } else {
-        logger.error(`Error Setup: ${error.message}`);
-        Sentry.captureException(error, {
-          extra: {
-            endpoint: `${method} ${url}`,
-            setupError: true,
-          }
-        });
+        errorMessage += ` | Error Setup: ${error.message}`;
+        errorContext = {
+          ...errorContext,
+          setupError: true,
+          message: error.message,
+        };
+        Sentry.captureException(error, { extra: errorContext });
       }
-      logger.error("=================\n");
+      
+      logger.error(errorMessage, errorContext);
 
       // Return a safe generic error to the UI
       return Promise.reject(
