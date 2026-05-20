@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import client from '../../src/api/client';
 import { ArrowLeft, ArrowUpRight, ArrowDownLeft, Calendar, Tag, Info, Receipt, Edit2 } from 'lucide-react-native';
 import { formatCurrency } from '../../src/utils/currency';
@@ -32,9 +32,11 @@ export default function TransactionDetailScreen() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchTransaction();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchTransaction();
+    }, [id])
+  );
 
   const fetchTransaction = async () => {
     try {
