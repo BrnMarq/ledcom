@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import * as Sentry from '@sentry/react-native';
 import client from '../api/client';
+import { logger } from '../utils/logger';
 
 interface User {
   id: number;
@@ -41,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         Sentry.setUser({ id: String(parsedUser.id), email: parsedUser.email });
       }
     } catch (e) {
-      console.error('Error loading stored auth', e);
+      logger.error('Error loading stored auth', { error: e });
       Sentry.captureException(e, { extra: { context: 'loadStoredAuth' } });
     } finally {
       setIsLoading(false);

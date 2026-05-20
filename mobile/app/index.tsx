@@ -4,6 +4,8 @@ import { useRouter, Stack } from 'expo-router';
 import client from '../src/api/client';
 import { Wallet, ChevronRight, LogOut, Plus } from 'lucide-react-native';
 import { useAuth } from '../src/context/AuthContext';
+import * as Sentry from '@sentry/react-native';
+import { logger } from '../src/utils/logger';
 
 interface Account {
   id: number;
@@ -27,7 +29,8 @@ export default function AccountsScreen() {
       const response = await client.get('/api/accounts');
       setAccounts(response.data);
     } catch (error) {
-      console.error('Error fetching accounts:', error);
+      logger.error('Error fetching accounts', { error });
+      Sentry.captureException(error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -48,6 +51,8 @@ export default function AccountsScreen() {
       setNewAccountSymbol('USD');
       fetchAccounts();
     } catch (error: any) {
+      logger.error('Error creating account', { error });
+      Sentry.captureException(error, { extra: { context: "createAccount" } });
       const message = error.response?.data?.error || 'Error al crear la cuenta';
       Alert.alert('Error', message);
     } finally {

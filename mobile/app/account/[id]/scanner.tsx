@@ -19,6 +19,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Sentry from "@sentry/react-native";
 import client from "../../../src/api/client";
+import { logger } from "../../../src/utils/logger";
 import {
   Camera as CameraIcon,
   Mic,
@@ -80,7 +81,7 @@ export default function ScannerScreen() {
         setMode("PREVIEW");
       }
     } catch (e) {
-      console.error("Gallery Error:", e);
+      logger.error("Gallery Error", { error: e });
       Sentry.captureException(e, { extra: { context: "pickImageFromGallery" } });
       Alert.alert("Error", "No se pudo seleccionar la imagen de la galería");
     }
@@ -108,7 +109,7 @@ export default function ScannerScreen() {
       recorder.record();
       setMode("AUDIO_RECORDING");
     } catch (err) {
-      console.error("Failed to start recording", err);
+      logger.error("Failed to start recording", { error: err });
       Sentry.captureException(err, { extra: { context: "startRecording" } });
       Alert.alert("Error", "No se pudo iniciar la grabación.");
     }
@@ -124,7 +125,7 @@ export default function ScannerScreen() {
         setPhoto(photo.uri);
         setMode("PREVIEW");
       } catch (e) {
-        console.error("Camera Error:", e);
+        logger.error("Camera Error", { error: e });
         Sentry.captureException(e, { extra: { context: "takePicture" } });
         Alert.alert("Error", "No se pudo tomar la foto");
       }
@@ -134,12 +135,12 @@ export default function ScannerScreen() {
   const stopRecording = async () => {
     try {
       // Immediate UI feedback
-      console.log("Stopping recording...");
+      logger.info("Stopping recording...");
       await recorder.stop();
 
       const status = recorder.getStatus();
       const finalUri = recorder.uri || status.url;
-      console.log("Recording stopped, URI:", finalUri);
+      logger.info("Recording stopped", { finalUri });
 
       if (finalUri) {
         setAudioUri(finalUri);
@@ -152,7 +153,7 @@ export default function ScannerScreen() {
         setMode("MENU");
       }
     } catch (err) {
-      console.error("Failed to stop recording", err);
+      logger.error("Failed to stop recording", { error: err });
       Sentry.captureException(err, { extra: { context: "stopRecording" } });
       Alert.alert("Error", "No se pudo detener la grabación.");
       // Fallback to menu if it fails to stop properly
@@ -195,7 +196,7 @@ export default function ScannerScreen() {
         },
       ]);
     } catch (error: any) {
-      console.error("Upload error:", error);
+      logger.error("Upload error", { error });
       Sentry.captureException(error, { extra: { context: "uploadMedia", accountId: id } });
       Alert.alert(
         "Error",

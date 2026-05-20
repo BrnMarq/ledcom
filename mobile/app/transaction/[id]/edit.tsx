@@ -12,9 +12,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import * as Sentry from "@sentry/react-native";
 import client from "../../../src/api/client";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react-native";
 import { formatCurrency } from "../../../src/utils/currency";
+import { logger } from "../../../src/utils/logger";
 
 interface TransactionItem {
   id?: number;
@@ -61,6 +63,8 @@ export default function EditTransactionScreen() {
       );
       setSymbol(t.account?.symbol || "USD");
     } catch (error) {
+      logger.error("Error loading transaction", { error });
+      Sentry.captureException(error);
       Alert.alert("Error", "No se pudo cargar la transacción.");
       router.back();
     } finally {
@@ -97,7 +101,8 @@ export default function EditTransactionScreen() {
         { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error) {
-      console.error(error);
+      logger.error("Error updating transaction", { error });
+      Sentry.captureException(error);
       Alert.alert("Error", "No se pudo actualizar.");
     } finally {
       setSaving(false);

@@ -1,6 +1,7 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import * as Sentry from "@sentry/react-native";
+import { logger } from "../utils/logger";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
@@ -28,13 +29,13 @@ client.interceptors.response.use(
     if (axios.isAxiosError(error)) {
       const method = error.config?.method?.toUpperCase() || "UNKNOWN METHOD";
       const url = error.config?.url || "UNKNOWN URL";
-      console.error(API_URL);
+      logger.error(`API_URL configured as ${API_URL}`);
 
-      console.error(`\n=== API ERROR ===\nEndpoint: ${method} ${url}`);
+      logger.error(`\n=== API ERROR ===\nEndpoint: ${method} ${url}`);
 
       if (error.response) {
-        console.error(`Status: ${error.response.status}`);
-        console.error(`Message: ${JSON.stringify(error.response.data)}`);
+        logger.error(`Status: ${error.response.status}`);
+        logger.error(`Message: ${JSON.stringify(error.response.data)}`);
         
         Sentry.addBreadcrumb({
           type: "http",
@@ -54,8 +55,8 @@ client.interceptors.response.use(
           }
         });
       } else if (error.request) {
-        console.error("Status: No response received (Network Error)");
-        console.error(
+        logger.error("Status: No response received (Network Error)");
+        logger.error(
           "Check your EXPO_PUBLIC_API_URL or if the backend is running.",
         );
         Sentry.captureException(error, {
@@ -65,7 +66,7 @@ client.interceptors.response.use(
           }
         });
       } else {
-        console.error(`Error Setup: ${error.message}`);
+        logger.error(`Error Setup: ${error.message}`);
         Sentry.captureException(error, {
           extra: {
             endpoint: `${method} ${url}`,
@@ -73,7 +74,7 @@ client.interceptors.response.use(
           }
         });
       }
-      console.error("=================\n");
+      logger.error("=================\n");
 
       // Return a safe generic error to the UI
       return Promise.reject(
@@ -81,7 +82,7 @@ client.interceptors.response.use(
       );
     }
 
-    console.error("[App Error]", error);
+    logger.error("[App Error]", error);
     return Promise.reject(new Error("Ocurrió un error inesperado."));
   },
 );
