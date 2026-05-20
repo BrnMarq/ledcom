@@ -16,6 +16,7 @@ import {
   FileText,
 } from "lucide-react-native";
 import { formatCurrency } from "../../../src/utils/currency";
+import * as Sentry from "@sentry/react-native";
 
 interface TransactionItem {
   name: string;
@@ -46,6 +47,7 @@ export default function HistoryScreen() {
       setTransactions(response.data);
     } catch (error) {
       console.error("Error fetching history:", error);
+      Sentry.captureException(error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -55,6 +57,7 @@ export default function HistoryScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchHistory();
+      Sentry.metrics.increment("history.viewed");
     }, [id]),
   );
 

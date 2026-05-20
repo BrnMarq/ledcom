@@ -3,6 +3,7 @@ import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import client from '../../src/api/client';
+import * as Sentry from "@sentry/react-native";
 import { ArrowLeft, ArrowUpRight, ArrowDownLeft, Calendar, Tag, Info, Receipt, Edit2 } from 'lucide-react-native';
 import { formatCurrency } from '../../src/utils/currency';
 
@@ -35,6 +36,7 @@ export default function TransactionDetailScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchTransaction();
+      Sentry.metrics.increment("transaction.viewed");
     }, [id])
   );
 
@@ -44,6 +46,7 @@ export default function TransactionDetailScreen() {
       setTransaction(response.data);
     } catch (error) {
       console.error('Error fetching transaction detail:', error);
+      Sentry.captureException(error);
     } finally {
       setLoading(false);
     }
