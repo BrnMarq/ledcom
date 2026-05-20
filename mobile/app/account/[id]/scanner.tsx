@@ -17,6 +17,7 @@ import {
   RecordingPresets,
 } from "expo-audio";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import * as Sentry from "@sentry/react-native";
 import client from "../../../src/api/client";
 import {
   Camera as CameraIcon,
@@ -80,6 +81,7 @@ export default function ScannerScreen() {
       }
     } catch (e) {
       console.error("Gallery Error:", e);
+      Sentry.captureException(e, { extra: { context: "pickImageFromGallery" } });
       Alert.alert("Error", "No se pudo seleccionar la imagen de la galería");
     }
   };
@@ -107,6 +109,7 @@ export default function ScannerScreen() {
       setMode("AUDIO_RECORDING");
     } catch (err) {
       console.error("Failed to start recording", err);
+      Sentry.captureException(err, { extra: { context: "startRecording" } });
       Alert.alert("Error", "No se pudo iniciar la grabación.");
     }
   };
@@ -122,6 +125,7 @@ export default function ScannerScreen() {
         setMode("PREVIEW");
       } catch (e) {
         console.error("Camera Error:", e);
+        Sentry.captureException(e, { extra: { context: "takePicture" } });
         Alert.alert("Error", "No se pudo tomar la foto");
       }
     }
@@ -149,6 +153,7 @@ export default function ScannerScreen() {
       }
     } catch (err) {
       console.error("Failed to stop recording", err);
+      Sentry.captureException(err, { extra: { context: "stopRecording" } });
       Alert.alert("Error", "No se pudo detener la grabación.");
       // Fallback to menu if it fails to stop properly
       setMode("MENU");
@@ -191,6 +196,7 @@ export default function ScannerScreen() {
       ]);
     } catch (error: any) {
       console.error("Upload error:", error);
+      Sentry.captureException(error, { extra: { context: "uploadMedia", accountId: id } });
       Alert.alert(
         "Error",
         "Hubo un problema al procesar con IA. Revisa tu conexión.",

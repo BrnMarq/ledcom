@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import * as Sentry from '@sentry/react-native';
 import client from '../api/client';
 
 interface User {
@@ -34,11 +35,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const storedUser = await SecureStore.getItemAsync('user_data');
       
       if (storedToken && storedUser) {
+        const parsedUser = JSON.parse(storedUser);
         setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+        setUser(parsedUser);
+        Sentry.setUser({ id: String(parsedUser.id), email: parsedUser.email });
       }
     } catch (e) {
       console.error('Error loading stored auth', e);
+      Sentry.captureException(e, { extra: { context: 'loadStoredAuth' } });
     } finally {
       setIsLoading(false);
     }
@@ -53,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     setToken(token);
     setUser(user);
+    Sentry.setUser({ id: String(user.id), email: user.email });
   }
 
   async function signUp(email: string, password: string) {
@@ -64,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     setToken(token);
     setUser(user);
+    Sentry.setUser({ id: String(user.id), email: user.email });
   }
 
   async function signInWithGoogle(idToken: string) {
@@ -75,6 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     setToken(token);
     setUser(user);
+    Sentry.setUser({ id: String(user.id), email: user.email });
   }
 
   async function signOut() {
@@ -82,6 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await SecureStore.deleteItemAsync('user_data');
     setToken(null);
     setUser(null);
+    Sentry.setUser(null);
   }
 
   return (

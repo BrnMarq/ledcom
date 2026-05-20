@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
+import * as Sentry from "@sentry/react-native";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
@@ -34,13 +35,43 @@ client.interceptors.response.use(
       if (error.response) {
         console.error(`Status: ${error.response.status}`);
         console.error(`Message: ${JSON.stringify(error.response.data)}`);
+        
+        Sentry.addBreadcrumb({
+          type: "http",
+          category: "xhr",
+          data: {
+            url,
+            method,
+            status_code: error.response.status,
+          }
+        });
+        
+        Sentry.captureException(error, {
+          extra: {
+            endpoint: `${method} ${url}`,
+            status: error.response.status,
+            response: error.response.data,
+          }
+        });
       } else if (error.request) {
         console.error("Status: No response received (Network Error)");
         console.error(
           "Check your EXPO_PUBLIC_API_URL or if the backend is running.",
         );
+        Sentry.captureException(error, {
+          extra: {
+            endpoint: `${method} ${url}`,
+            networkError: true,
+          }
+        });
       } else {
         console.error(`Error Setup: ${error.message}`);
+        Sentry.captureException(error, {
+          extra: {
+            endpoint: `${method} ${url}`,
+            setupError: true,
+          }
+        });
       }
       console.error("=================\n");
 

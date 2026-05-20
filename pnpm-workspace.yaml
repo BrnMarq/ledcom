@@ -5,14 +5,15 @@ allowBuilds:
   "@google/genai": true
   "@prisma/client": true
   "@prisma/engines": true
+  "@sentry-internal/node-cpu-profiler": true
   "@sentry/cli": true
   prisma: true
   protobufjs: true
   unrs-resolver: true
 minimumReleaseAgeExclude:
-  - '@expo/cli@55.0.31'
-  - '@expo/metro-config@55.0.22'
-  - '@expo/router-server@55.0.17'
+  - "@expo/cli@55.0.31"
+  - "@expo/metro-config@55.0.22"
+  - "@expo/router-server@55.0.17"
   - babel-preset-expo@55.0.22
   - expo-file-system@55.0.21
   - expo-font@55.0.8
