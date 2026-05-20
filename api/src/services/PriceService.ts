@@ -1,5 +1,5 @@
-import { PriceProvider } from '../providers/PriceProvider';
-import prisma from '../client';
+import { PriceProvider } from "@/providers/PriceProvider";
+import prisma from "@/client";
 
 export class PriceService {
   private providers: Record<string, PriceProvider>;

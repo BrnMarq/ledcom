@@ -7,6 +7,9 @@ module.exports = {
   testEnvironment: "node",
   setupFilesAfterEnv: ['<rootDir>/src/singleton.ts'],
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
   transform: {
     ...tsJestTransformCfg,
   },

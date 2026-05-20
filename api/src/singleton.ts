@@ -3,9 +3,9 @@ import { mockDeep, mockReset, DeepMockProxy } from 'jest-mock-extended';
 
 process.env.JWT_SECRET = 'test-secret';
 
-import prisma from './client';
+import prisma from "@/client";
 
-jest.mock('./client', () => ({
+jest.mock('@/client', () => ({
   __esModule: true,
   default: mockDeep<PrismaClient>(),
 }));

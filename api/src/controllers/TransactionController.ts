@@ -1,8 +1,8 @@
 import { Response } from "express";
-import { TransactionService } from "../services/TransactionService";
-import { ContextService } from "../services/ContextService";
-import { AuthRequest } from "../middleware/auth";
-import prisma from "../client";
+import { TransactionService } from "@/services/TransactionService";
+import { ContextService } from "@/services/ContextService";
+import { AuthRequest } from "@/middleware/auth";
+import prisma from "@/client";
 
 const transactionService = new TransactionService();
 const contextService = new ContextService();

@@ -4,10 +4,10 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "build": "prisma generate && tsc",
+    "build": "prisma generate && tsc && tsc-alias",
     "postinstall": "prisma generate",
     "start": "node --env-file=.env dist/server.js",
-    "dev": "node --env-file=.env -r ts-node/register src/server.ts"
+    "dev": "node --env-file=.env -r tsconfig-paths/register -r ts-node/register src/server.ts"
   },
   "keywords": [],
   "author": "",
@@ -50,6 +50,8 @@
     "supertest": "7.2.2",
     "ts-jest": "29.4.9",
     "ts-node": "10.9.2",
+    "tsc-alias": "^1.8.17",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "5.9.3"
   },
   "packageManager": "pnpm@11.1.3"

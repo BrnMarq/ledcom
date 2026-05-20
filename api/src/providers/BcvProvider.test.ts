@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BcvProvider } from "./BcvProvider";
+import { BcvProvider } from "@/providers/BcvProvider";
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;

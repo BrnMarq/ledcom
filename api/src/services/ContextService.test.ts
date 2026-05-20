@@ -1,5 +1,5 @@
-import { ContextService } from "./ContextService";
-import { prismaMock } from "../singleton";
+import { ContextService } from "@/services/ContextService";
+import { prismaMock } from "@/singleton";
 import * as fs from "fs";
 
 jest.mock("fs");
