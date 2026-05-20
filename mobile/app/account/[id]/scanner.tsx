@@ -67,19 +67,19 @@ export default function ScannerScreen() {
 
     // Also request media library permission for the thumbnail
     try {
-      const { status: mediaStatus } = await MediaLibrary.requestPermissionsAsync(false, ["photo"]);
-      if (mediaStatus === "granted") {
-        const assets = await MediaLibrary.getAssetsAsync({
-          mediaType: ["photo"],
-          first: 1,
-          sortBy: [[MediaLibrary.SortBy.creationTime, false]],
-        });
-        if (assets.assets.length > 0) {
-          setLatestPhotoUri(assets.assets[0].uri);
-        }
+      const assets = await MediaLibrary.getAssetsAsync({
+        mediaType: ["photo"],
+        first: 1,
+        sortBy: [[MediaLibrary.SortBy.creationTime, false]],
+      });
+      if (assets.assets.length > 0) {
+        setLatestPhotoUri(assets.assets[0].uri);
       }
     } catch (err) {
-      console.warn("Failed to request media permissions or load thumbnail:", err);
+      console.warn(
+        "Failed to request media permissions or load thumbnail:",
+        err,
+      );
       // Fallback gracefully without crashing
     }
 
@@ -89,7 +89,7 @@ export default function ScannerScreen() {
   const pickImageFromGallery = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ["images"],
         allowsEditing: false,
         quality: 0.5,
       });
@@ -243,7 +243,10 @@ export default function ScannerScreen() {
         <CameraView ref={cameraRef} className="flex-1" facing="back" />
 
         {/* Top-left close button */}
-        <SafeAreaView className="absolute top-6 left-6" pointerEvents="box-none">
+        <SafeAreaView
+          className="absolute top-6 left-6"
+          pointerEvents="box-none"
+        >
           <TouchableOpacity
             onPress={() => setMode("MENU")}
             className="bg-white/20 w-12 h-12 rounded-full items-center justify-center"
