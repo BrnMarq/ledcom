@@ -55,7 +55,23 @@
       "expo-image",
       "expo-web-browser",
       "expo-asset",
-      "expo-image-picker"
+      "expo-image-picker",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "Ledcom",
+          "organization": "Ledcom"
+        }
+      ]
+    ],
+      "expo-secure-store",
+      "expo-font",
+      "expo-image",
+      "expo-web-browser",
+      "expo-asset",
+      "expo-image-picker",
+      "@sentry/react-native"
     ],
     "experiments": {
       "typedRoutes": true,

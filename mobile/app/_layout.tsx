@@ -3,6 +3,12 @@ import { StatusBar } from "expo-status-bar";
 import { AuthProvider, useAuth } from "../src/context/AuthContext";
 import React, { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
+import * as Sentry from "@sentry/react-native";
+
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 1.0, // Ajusta esto en producción (ej. 0.2 para 20%)
+});
 
 function RootLayoutNav() {
   const { user, isLoading } = useAuth();
@@ -63,7 +69,7 @@ function RootLayoutNav() {
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
   return (
     <AuthProvider>
       <RootLayoutNav />
@@ -71,3 +77,5 @@ export default function RootLayout() {
     </AuthProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);
