@@ -6,12 +6,6 @@ settings:
 
 importers:
 
-  .:
-    dependencies:
-      '@sentry/cli':
-        specifier: ^3.4.2
-        version: 3.4.2
-
   api:
     dependencies:
       '@google/genai':
@@ -123,6 +117,9 @@ importers:
       '@react-navigation/native':
         specifier: ^7.1.8
         version: 7.2.4(react-native@0.83.6(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+      '@sentry/cli':
+        specifier: ^3.4.2
+        version: 3.4.2
       '@sentry/react-native':
         specifier: ~7.11.0
         version: 7.11.0(expo@55.0.25)(react-native@0.83.6(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
