@@ -1,4 +1,4 @@
-import { PriceProvider } from "./PriceProvider";
+import { PriceProvider } from "@/providers/PriceProvider";
 
 export class MockProvider implements PriceProvider {
   getProviderName(): string {

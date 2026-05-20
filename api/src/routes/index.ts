@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import accountRoutes from "./accountRoutes";
-import transactionRoutes from "./transactionRoutes";
-import priceRoutes from "./priceRoutes";
-import cronRoutes from "./cron/cronRoutes";
-import authRoutes from "./authRoutes";
-import { authMiddleware } from "../middleware/auth";
+import accountRoutes from "@/routes/accountRoutes";
+import transactionRoutes from "@/routes/transactionRoutes";
+import priceRoutes from "@/routes/priceRoutes";
+import cronRoutes from "@/routes/cron/cronRoutes";
+import authRoutes from "@/routes/authRoutes";
+import { authMiddleware } from "@/middleware/auth";
 
 const router = Router();
 

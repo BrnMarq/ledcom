@@ -1,9 +1,9 @@
 import { TransactionType, TransactionFlow } from "@prisma/client";
-import prisma from "../client";
+import prisma from "@/client";
 import { GoogleGenAI } from "@google/genai";
 import * as fs from "fs";
-import { calculateUnitPrice, calculateTransactionTotal } from "../utils/calculations";
-import logger from "../utils/logger";
+import { calculateUnitPrice, calculateTransactionTotal } from "@/utils/calculations";
+import logger from "@/utils/logger";
 
 const SYSTEM_PROMPT = `
 Eres un asistente financiero experto. Analiza este recibo (imagen) o nota de voz (audio). 

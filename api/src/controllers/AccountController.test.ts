@@ -1,6 +1,6 @@
 import request from 'supertest';
-import app from "../app";
-import { prismaMock } from "../singleton";
+import app from "@/app";
+import { prismaMock } from "@/singleton";
 import jwt from 'jsonwebtoken';
 
 const token = jwt.sign({ userId: 1 }, process.env.JWT_SECRET || 'test-secret');

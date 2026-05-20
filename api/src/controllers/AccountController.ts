@@ -1,6 +1,6 @@
 import { Response } from 'express';
-import { AuthRequest } from "../middleware/auth";
-import prisma from "../client";
+import { AuthRequest } from "@/middleware/auth";
+import prisma from "@/client";
 
 export class AccountController {
   async create(req: AuthRequest, res: Response) {

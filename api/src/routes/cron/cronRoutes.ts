@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { CronController } from "../../controllers/cron/CronController";
+import { CronController } from "@/controllers/cron/CronController";
 
 const router = Router();
 const controller = new CronController();

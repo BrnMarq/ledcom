@@ -1,5 +1,5 @@
-import { TransactionService } from "./TransactionService";
-import { prismaMock } from "../singleton";
+import { TransactionService } from "@/services/TransactionService";
+import { prismaMock } from "@/singleton";
 
 describe("TransactionService", () => {
   let transactionService: TransactionService;

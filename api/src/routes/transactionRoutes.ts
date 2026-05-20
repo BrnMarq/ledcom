@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { TransactionController } from "../controllers/TransactionController";
-import { upload } from "../config/multer";
+import { TransactionController } from "@/controllers/TransactionController";
+import { upload } from "@/config/multer";
 
 const router = Router();
 const controller = new TransactionController();

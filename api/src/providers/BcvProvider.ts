@@ -1,5 +1,5 @@
 import axios from "axios";
-import { PriceProvider } from "./PriceProvider";
+import { PriceProvider } from "@/providers/PriceProvider";
 
 export class BcvProvider implements PriceProvider {
   getProviderName(): string {
