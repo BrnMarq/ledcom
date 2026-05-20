@@ -3,6 +3,7 @@ import prisma from "../client";
 import { GoogleGenAI } from "@google/genai";
 import * as fs from "fs";
 import { calculateUnitPrice, calculateTransactionTotal } from "../utils/calculations";
+import logger from "../utils/logger";
 
 const SYSTEM_PROMPT = `
 Eres un asistente financiero experto. Analiza este recibo (imagen) o nota de voz (audio). 
@@ -25,7 +26,7 @@ Devuelve ÚNICAMENTE un objeto JSON válido con la siguiente estructura y sin ma
 export class ContextService {
   private async processWithGemini(fileUrl: string, fileType: string) {
     if (!process.env.GEMINI_API_KEY) {
-      console.warn(
+      logger.warn(
         "[ContextService] GEMINI_API_KEY missing. Returning mock data.",
       );
       return this.getMockData(fileType);
@@ -61,7 +62,7 @@ export class ContextService {
         .trim();
       return JSON.parse(cleanJson);
     } catch (error) {
-      console.error("[ContextService] Error calling Gemini API:", error);
+      logger.error({ error }, "[ContextService] Error calling Gemini API");
       throw new Error("Failed to process media with AI.");
     } finally {
       // Clean up the file to prevent storage bloat
@@ -107,11 +108,11 @@ export class ContextService {
     fileType: string,
     defaultSymbol: string = "USD", // Keeping argument for potential future use or backward compat, but won't save to transaction table.
   ) {
-    console.log(`[ContextService] Starting AI processing for new media...`);
+    logger.info(`[ContextService] Starting AI processing for new media...`);
 
     const aiResult = await this.processWithGemini(fileUrl, fileType);
 
-    console.log(`[ContextService] Context generated: "${aiResult.context}"`);
+    logger.info(`[ContextService] Context generated: "${aiResult.context}"`);
 
     // Process items and calculate unit prices and overall total
     const processedItems = (aiResult.items || []).map((item: any) => ({
@@ -151,7 +152,7 @@ export class ContextService {
       },
     });
 
-    console.log(
+    logger.info(
       `[ContextService] Transaction created successfully with ID #${transaction.id}.`,
     );
     return transaction;

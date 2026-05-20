@@ -1,9 +1,12 @@
 import express from 'express';
 import cors from 'cors';
+import pino from 'pino-http';
+import logger from './utils/logger';
 import routes from './routes';
 
 const app = express();
 
+app.use(pino({ logger }));
 app.use(cors());
 app.use(express.json());
 
