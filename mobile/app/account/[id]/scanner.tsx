@@ -10,7 +10,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CameraView, Camera } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
-import * as MediaLibrary from "expo-media-library";
 import {
   useAudioRecorder,
   setAudioModeAsync,
@@ -46,7 +45,6 @@ export default function ScannerScreen() {
   // Camera State
   const cameraRef = useRef<any>(null);
   const [photo, setPhoto] = useState<string | null>(null);
-  const [latestPhotoUri, setLatestPhotoUri] = useState<string | null>(null);
 
   // Audio State
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
@@ -63,24 +61,6 @@ export default function ScannerScreen() {
         );
         return;
       }
-    }
-
-    // Also request media library permission for the thumbnail
-    try {
-      const assets = await MediaLibrary.getAssetsAsync({
-        mediaType: ["photo"],
-        first: 1,
-        sortBy: [[MediaLibrary.SortBy.creationTime, false]],
-      });
-      if (assets.assets.length > 0) {
-        setLatestPhotoUri(assets.assets[0].uri);
-      }
-    } catch (err) {
-      console.warn(
-        "Failed to request media permissions or load thumbnail:",
-        err,
-      );
-      // Fallback gracefully without crashing
     }
 
     setMode("CAMERA");
@@ -265,15 +245,7 @@ export default function ScannerScreen() {
             onPress={pickImageFromGallery}
             className="absolute left-12 w-14 h-14 bg-gray-800 rounded-2xl justify-center items-center overflow-hidden border border-gray-600"
           >
-            {latestPhotoUri ? (
-              <Image
-                source={{ uri: latestPhotoUri }}
-                className="w-full h-full"
-                resizeMode="cover"
-              />
-            ) : (
-              <ImageIcon color="#fff" size={24} />
-            )}
+            <ImageIcon color="#fff" size={24} />
           </TouchableOpacity>
 
           {/* Capture Button */}
