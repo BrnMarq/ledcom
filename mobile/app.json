@@ -55,15 +55,7 @@
       "expo-image",
       "expo-web-browser",
       "expo-asset",
-      "expo-image-picker",
-      [
-        "expo-media-library",
-        {
-          "photosPermission": "Permite a la aplicación acceder a tus fotos para escanear recibos.",
-          "savePhotosPermission": "Permite a la aplicación guardar fotos.",
-          "isAccessMediaLocationEnabled": true
-        }
-      ]
+      "expo-image-picker"
     ],
     "experiments": {
       "typedRoutes": true,
