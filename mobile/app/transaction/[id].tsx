@@ -1,12 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
-import client from '@/src/api/client';
 import * as Sentry from "@sentry/react-native";
-import { logger } from '@/src/utils/logger';
-import { ArrowLeft, ArrowUpRight, ArrowDownLeft, Calendar, Tag, Info, Receipt, Edit2 } from 'lucide-react-native';
+import { ArrowUpRight, ArrowDownLeft, Calendar, Tag, Receipt, Edit2 } from 'lucide-react-native';
 import { formatCurrency } from '@/src/utils/currency';
+import { useTransactionDetail } from '@/src/api/queries/transaction';
 
 interface TransactionItem {
   id: number;
@@ -16,41 +14,20 @@ interface TransactionItem {
   totalPrice: number;
 }
 
-interface Transaction {
-  id: number;
-  totalValue: number;
-  type: string;
-  flow: 'IN' | 'OUT';
-  date: string;
-  context: string;
-  status: string;
-  items: TransactionItem[];
-  account: { symbol: string };
-}
-
 export default function TransactionDetailScreen() {
   const { id } = useLocalSearchParams();
-  const [transaction, setTransaction] = useState<Transaction | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: transaction, isLoading: loading } = useTransactionDetail(id as string);
   const router = useRouter();
 
   useFocusEffect(
     useCallback(() => {
-      fetchTransaction();
-    }, [id])
+      Sentry.addBreadcrumb({
+        category: "navigation",
+        message: "transaction.viewed",
+        level: "info",
+      });
+    }, [])
   );
-
-  const fetchTransaction = async () => {
-    try {
-      const response = await client.get(`/api/transactions/${id}`);
-      setTransaction(response.data);
-    } catch (error) {
-      logger.error('Error fetching transaction detail', { error });
-      Sentry.captureException(error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -140,7 +117,7 @@ export default function TransactionDetailScreen() {
         {/* AI Context Card */}
         <View className="bg-white rounded-3xl p-6 shadow-sm mb-6">
             <Text className="text-gray-400 text-[10px] font-bold uppercase mb-3 tracking-widest">Resumen IA</Text>
-            <Text className="text-gray-800 leading-6 italic">"{transaction.context || 'Sin descripción disponible.'}"</Text>
+            <Text className="text-gray-800 leading-6 italic">&quot;{transaction.context || 'Sin descripción disponible.'}&quot;</Text>
         </View>
 
         {/* Items Card */}
@@ -151,7 +128,7 @@ export default function TransactionDetailScreen() {
                     <Text className="text-gray-800 font-black text-lg ml-2">Artículos</Text>
                 </View>
                 
-                {transaction.items.map((item, index) => (
+                {transaction.items.map((item: TransactionItem, index: number) => (
                     <View key={item.id} className={`py-4 flex-row justify-between items-center ${index !== transaction.items.length - 1 ? 'border-b border-gray-50' : ''}`}>
                         <View className="flex-1">
                             <Text className="text-gray-800 font-bold">{item.name}</Text>

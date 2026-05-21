@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/src/context/AuthContext';
@@ -22,16 +22,7 @@ export default function RegisterScreen() {
     androidClientId: 'process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID',
   });
 
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const { authentication } = response;
-      if (authentication?.idToken) {
-        handleGoogleRegister(authentication.idToken);
-      }
-    }
-  }, [response]);
-
-  const handleGoogleRegister = async (idToken: string) => {
+  const handleGoogleRegister = useCallback(async (idToken: string) => {
     setLoading(true);
     try {
       await signInWithGoogle(idToken);
@@ -42,7 +33,16 @@ export default function RegisterScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [signInWithGoogle, router]);
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { authentication } = response;
+      if (authentication?.idToken) {
+        handleGoogleRegister(authentication.idToken);
+      }
+    }
+  }, [response, handleGoogleRegister]);
 
   const handleRegister = async () => {
     if (!email || !password) {

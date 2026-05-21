@@ -1,41 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Modal, TextInput, Alert } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import client from '@/src/api/client';
 import { Wallet, ChevronRight, LogOut, Plus } from 'lucide-react-native';
 import { useAuth } from '@/src/context/AuthContext';
-import * as Sentry from '@sentry/react-native';
-import { logger } from '@/src/utils/logger';
-
-interface Account {
-  id: number;
-  name: string;
-}
+import { useAccounts, useCreateAccount } from '@/src/api/queries/account';
 
 export default function AccountsScreen() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { data: accounts = [], isLoading: loading, refetch, isRefetching } = useAccounts();
+  const createAccountMutation = useCreateAccount();
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newAccountName, setNewAccountName] = useState('');
   const [newAccountSymbol, setNewAccountSymbol] = useState('USD');
-  const [isCreating, setIsCreating] = useState(false);
   
   const router = useRouter();
   const { signOut, user } = useAuth();
-
-  const fetchAccounts = async () => {
-    try {
-      const response = await client.get('/api/accounts');
-      setAccounts(response.data);
-    } catch (error) {
-      logger.error('Error fetching accounts', { error });
-      Sentry.captureException(error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
 
   const handleCreateAccount = async () => {
     if (!newAccountName.trim()) {
@@ -43,35 +22,29 @@ export default function AccountsScreen() {
       return;
     }
     
-    setIsCreating(true);
-    try {
-      await client.post('/api/accounts', { name: newAccountName.trim(), symbol: newAccountSymbol.trim() || 'USD' });
-      setIsModalVisible(false);
-      setNewAccountName('');
-      setNewAccountSymbol('USD');
-      fetchAccounts();
-    } catch (error: any) {
-      logger.error('Error creating account', { error });
-      Sentry.captureException(error, { extra: { context: "createAccount" } });
-      const message = error.response?.data?.error || 'Error al crear la cuenta';
-      Alert.alert('Error', message);
-    } finally {
-      setIsCreating(false);
-    }
+    createAccountMutation.mutate(
+      { name: newAccountName.trim(), symbol: newAccountSymbol.trim() || 'USD' },
+      {
+        onSuccess: () => {
+          setIsModalVisible(false);
+          setNewAccountName('');
+          setNewAccountSymbol('USD');
+        },
+        onError: (error: any) => {
+          const message = error.response?.data?.error || 'Error al crear la cuenta';
+          Alert.alert('Error', message);
+        }
+      }
+    );
   };
-
-  useEffect(() => {
-    if (user) {
-      fetchAccounts();
-    } else {
-      setLoading(false); // Stop loading if not logged in to prevent infinite spinner
-    }
-  }, [user]);
 
   const onRefresh = () => {
-    setRefreshing(true);
-    fetchAccounts();
+    refetch();
   };
+
+  if (!user) {
+    return null; // Return nothing while auth state is resolving or redirecting
+  }
 
   if (loading) {
     return (
@@ -99,7 +72,7 @@ export default function AccountsScreen() {
         data={accounts}
         keyExtractor={(item) => item.id.toString()}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#10B981" />
+          <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor="#10B981" />
         }
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -120,7 +93,7 @@ export default function AccountsScreen() {
         ListEmptyComponent={
           <View className="items-center mt-12 bg-white p-10 rounded-3xl border border-dashed border-gray-300">
             <Text className="text-gray-400 text-center text-lg">No tienes cuentas aún.</Text>
-            <Text className="text-gray-400 text-center text-sm mt-1">Toca el botón '+' abajo para empezar.</Text>
+            <Text className="text-gray-400 text-center text-sm mt-1">Toca el botón &apos;+&apos; abajo para empezar.</Text>
           </View>
         }
       />
@@ -186,7 +159,7 @@ export default function AccountsScreen() {
                   setNewAccountName('');
                   setNewAccountSymbol('USD');
                 }}
-                disabled={isCreating}
+                disabled={createAccountMutation.isPending}
               >
                 <Text className="text-gray-600 font-bold">Cancelar</Text>
               </TouchableOpacity>
@@ -194,9 +167,9 @@ export default function AccountsScreen() {
               <TouchableOpacity
                 className="px-5 py-3 rounded-xl bg-emerald-500 min-w-[100px] items-center"
                 onPress={handleCreateAccount}
-                disabled={isCreating}
+                disabled={createAccountMutation.isPending}
               >
-                {isCreating ? (
+                {createAccountMutation.isPending ? (
                   <ActivityIndicator color="#fff" size="small" />
                 ) : (
                   <Text className="text-white font-bold">Crear</Text>

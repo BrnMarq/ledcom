@@ -12,11 +12,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import client from "@/src/api/client";
 import * as Sentry from "@sentry/react-native";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react-native";
 import { formatCurrency } from "@/src/utils/currency";
 import { logger } from "@/src/utils/logger";
+import { useTransactionDetail, useUpdateTransaction } from "@/src/api/queries/transaction";
 
 interface TransactionItem {
   id?: number;
@@ -30,8 +30,8 @@ export default function EditTransactionScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const { data: transaction, isLoading: loading } = useTransactionDetail(id as string);
+  const updateTransactionMutation = useUpdateTransaction(id as string);
 
   const [totalValue, setTotalValue] = useState("0");
   const [type, setType] = useState("WANTS");
@@ -41,72 +41,58 @@ export default function EditTransactionScreen() {
   const [symbol, setSymbol] = useState("USD");
 
   useEffect(() => {
-    fetchTransaction();
-  }, [id]);
-
-  const fetchTransaction = async () => {
-    try {
-      const response = await client.get(`/api/transactions/${id}`);
-      const t = response.data;
-      setTotalValue(t.totalValue.toString());
-      setType(t.type);
-      setFlow(t.flow);
-      setContext(t.context || "");
+    if (transaction) {
+      setTotalValue(transaction.totalValue.toString());
+      setType(transaction.type);
+      setFlow(transaction.flow);
+      setContext(transaction.context || "");
       setItems(
-        t.items
-          ? t.items.map((item: any) => ({
+        transaction.items
+          ? transaction.items.map((item: any) => ({
               ...item,
               quantity: item.quantity.toString(),
               totalPrice: item.totalPrice.toString(),
             }))
           : [],
       );
-      setSymbol(t.account?.symbol || "USD");
-    } catch (error) {
-      logger.error("Error loading transaction", { error });
-      Sentry.captureException(error);
-      Alert.alert("Error", "No se pudo cargar la transacción.");
-      router.back();
-    } finally {
-      setLoading(false);
+      setSymbol(transaction.account?.symbol || "USD");
     }
-  };
+  }, [transaction]);
 
   const computedTotal = items.length > 0 
     ? items.reduce((sum, item) => sum + (parseFloat(item.totalPrice) || 0), 0)
     : parseFloat(totalValue) || 0;
 
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const payload = {
-        totalValue: computedTotal,
-        type,
-        flow,
-        context,
-        items: items.map((item) => {
-          const q = parseFloat(item.quantity) || 0;
-          const t = parseFloat(item.totalPrice) || 0;
-          return {
-            ...item,
-            quantity: q,
-            totalPrice: t,
-            unitPrice: q === 0 ? 0 : t / q,
-          };
-        }),
-      };
+  const handleSave = () => {
+    const payload = {
+      totalValue: computedTotal,
+      type,
+      flow,
+      context,
+      items: items.map((item) => {
+        const q = parseFloat(item.quantity) || 0;
+        const t = parseFloat(item.totalPrice) || 0;
+        return {
+          ...item,
+          quantity: q,
+          totalPrice: t,
+          unitPrice: q === 0 ? 0 : t / q,
+        };
+      }),
+    };
 
-      await client.patch(`/api/transactions/${id}`, payload);
-      Alert.alert("Éxito", "Transacción actualizada", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
-    } catch (error) {
-      logger.error("Error updating transaction", { error });
-      Sentry.captureException(error);
-      Alert.alert("Error", "No se pudo actualizar.");
-    } finally {
-      setSaving(false);
-    }
+    updateTransactionMutation.mutate(payload, {
+      onSuccess: () => {
+        Alert.alert("Éxito", "Transacción actualizada", [
+          { text: "OK", onPress: () => router.back() },
+        ]);
+      },
+      onError: (error) => {
+        logger.error("Error updating transaction", { error });
+        Sentry.captureException(error);
+        Alert.alert("Error", "No se pudo actualizar.");
+      }
+    });
   };
 
   const addItem = () => {
@@ -172,10 +158,10 @@ export default function EditTransactionScreen() {
         <Text className="text-xl font-bold text-gray-800">Editar Gasto</Text>
         <TouchableOpacity
           onPress={handleSave}
-          disabled={saving}
+          disabled={updateTransactionMutation.isPending}
           className="p-2 -mr-2"
         >
-          {saving ? (
+          {updateTransactionMutation.isPending ? (
             <ActivityIndicator size="small" color="#10B981" />
           ) : (
             <Save color="#10B981" size={24} />

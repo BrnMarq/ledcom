@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
   RefreshControl,
 } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
-import client from "@/src/api/client";
 import {
   Plus,
   ArrowUpRight,
@@ -17,53 +16,30 @@ import {
 } from "lucide-react-native";
 import { formatCurrency } from "@/src/utils/currency";
 import * as Sentry from "@sentry/react-native";
-import { logger } from "@/src/utils/logger";
+import { useAccountTransactions } from "@/src/api/queries/transaction";
 
 interface TransactionItem {
   name: string;
   totalPrice: number;
 }
 
-interface Transaction {
-  id: number;
-  totalValue: number;
-  type: string;
-  flow: "IN" | "OUT";
-  date: string;
-  context: string;
-  items?: TransactionItem[];
-  account: { symbol: string };
-}
-
 export default function HistoryScreen() {
-  const { id, refresh } = useLocalSearchParams();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { id } = useLocalSearchParams();
+  const { data: transactions = [], isLoading: loading, refetch, isRefetching } = useAccountTransactions(id as string);
   const router = useRouter();
-
-  const fetchHistory = async () => {
-    try {
-      const response = await client.get(`/api/transactions/account/${id}`);
-      setTransactions(response.data);
-    } catch (error) {
-      logger.error("Error fetching history", { error });
-      Sentry.captureException(error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
 
   useFocusEffect(
     useCallback(() => {
-      fetchHistory();
-    }, [id]),
+      Sentry.addBreadcrumb({
+        category: "navigation",
+        message: "history.viewed",
+        level: "info",
+      });
+    }, []),
   );
 
   const onRefresh = () => {
-    setRefreshing(true);
-    fetchHistory();
+    refetch();
   };
 
   const formatDate = (dateStr: string) => {
@@ -91,7 +67,7 @@ export default function HistoryScreen() {
         keyExtractor={(item) => item.id.toString()}
         refreshControl={
           <RefreshControl
-            refreshing={refreshing}
+            refreshing={isRefetching}
             onRefresh={onRefresh}
             tintColor="#10B981"
           />
@@ -138,7 +114,7 @@ export default function HistoryScreen() {
 
             {item.items && item.items.length > 0 && (
               <View className="mt-3 pt-3 border-t border-gray-50">
-                {item.items.map((line, idx) => (
+                {item.items.map((line: TransactionItem, idx: number) => (
                   <View key={idx} className="flex-row justify-between mb-1">
                     <Text className="text-gray-500 text-xs">• {line.name}</Text>
                     <Text className="text-gray-600 text-xs font-semibold">

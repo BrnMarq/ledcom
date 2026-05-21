@@ -4,10 +4,20 @@ import { AuthProvider, useAuth } from "@/src/context/AuthContext";
 import React, { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
 import * as Sentry from "@sentry/react-native";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   tracesSampleRate: 1.0, // Ajusta esto en producción (ej. 0.2 para 20%)
+});
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 2,
+    },
+  },
 });
 
 function RootLayoutNav() {
@@ -27,7 +37,7 @@ function RootLayoutNav() {
       // Redirect to home if authenticated and in auth group
       router.replace("/");
     }
-  }, [user, isLoading, segments]);
+  }, [user, isLoading, segments, router]);
 
   if (isLoading) {
     return (
@@ -71,10 +81,12 @@ function RootLayoutNav() {
 
 function RootLayout() {
   return (
-    <AuthProvider>
-      <RootLayoutNav />
-      <StatusBar style="light" />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RootLayoutNav />
+        <StatusBar style="light" />
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -18,8 +18,8 @@ import {
 } from "expo-audio";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Sentry from "@sentry/react-native";
-import client from "@/src/api/client";
 import { logger } from "@/src/utils/logger";
+import { useProcessMedia } from "@/src/api/queries/transaction";
 import {
   Camera as CameraIcon,
   Mic,
@@ -42,7 +42,7 @@ export default function ScannerScreen() {
   const [hasAudioPermission, setHasAudioPermission] = useState<boolean | null>(
     null,
   );
-  const [isProcessing, setIsProcessing] = useState(false);
+  const processMediaMutation = useProcessMedia();
 
   // Camera State
   const cameraRef = useRef<any>(null);
@@ -168,7 +168,6 @@ export default function ScannerScreen() {
       return;
     }
 
-    setIsProcessing(true);
     const formData = new FormData();
     formData.append("accountId", id as string);
 
@@ -182,32 +181,29 @@ export default function ScannerScreen() {
       type: fileType,
     });
 
-    try {
-      await client.post("/api/transactions", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      Alert.alert("¡Excelente!", "IA procesó tu gasto correctamente.", [
-        {
-          text: "Ir al historial",
-          onPress: () => router.back(),
-        },
-      ]);
-    } catch (error: any) {
-      logger.error("Upload error", { error });
-      Sentry.captureException(error, { extra: { context: "uploadMedia", accountId: id } });
-      Alert.alert(
-        "Error",
-        "Hubo un problema al procesar con IA. Revisa tu conexión.",
-      );
-    } finally {
-      setIsProcessing(false);
-    }
+    processMediaMutation.mutate(formData, {
+      onSuccess: () => {
+        Alert.alert("¡Excelente!", "IA procesó tu gasto correctamente.", [
+          {
+            text: "Ir al historial",
+            onPress: () => router.back(),
+          },
+        ]);
+      },
+      onError: (error: any) => {
+        logger.error("Upload error", { error });
+        Sentry.captureException(error, {
+          extra: { context: "uploadMedia", accountId: id },
+        });
+        Alert.alert(
+          "Error",
+          "Hubo un problema al procesar con IA. Revisa tu conexión.",
+        );
+      },
+    });
   };
 
-  if (isProcessing) {
+  if (processMediaMutation.isPending) {
     return (
       <View className="flex-1 justify-center items-center bg-white p-10">
         <View className="bg-emerald-50 p-8 rounded-full mb-8">
@@ -277,7 +273,7 @@ export default function ScannerScreen() {
           Escuchando...
         </Text>
         <Text className="text-emerald-100 text-lg text-center mb-20">
-          "Compré 3 cebollas por 1 dólar..."
+          &quot;Compré 3 cebollas por 1 dólar...&quot;
         </Text>
 
         <TouchableOpacity
