@@ -4,6 +4,7 @@ import { useRouter, Stack } from 'expo-router';
 import { Wallet, ChevronRight, LogOut, Plus } from 'lucide-react-native';
 import { useAuth } from '@/src/context/AuthContext';
 import { useAccounts, useCreateAccount } from '@/src/api/queries/account';
+import { formatCurrency } from '@/src/utils/currency';
 
 export default function AccountsScreen() {
   const { data: accounts = [], isLoading: loading, refetch, isRefetching } = useAccounts();
@@ -74,7 +75,7 @@ export default function AccountsScreen() {
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor="#10B981" />
         }
-        renderItem={({ item }) => (
+        renderItem={({ item }: { item: any }) => (
           <TouchableOpacity
             activeOpacity={0.7}
             className="bg-white p-5 rounded-3xl shadow-sm mb-4 flex-row items-center border border-gray-100"
@@ -85,7 +86,7 @@ export default function AccountsScreen() {
             </View>
             <View className="flex-1">
               <Text className="text-xl font-bold text-gray-800">{item.name}</Text>
-              <Text className="text-gray-400 text-sm">Toca para ver actividad</Text>
+              <Text className="text-gray-400 text-sm">Balance: {formatCurrency(item.balance || 0, item.symbol || 'USD')}</Text>
             </View>
             <ChevronRight color="#D1D5DB" size={20} />
           </TouchableOpacity>

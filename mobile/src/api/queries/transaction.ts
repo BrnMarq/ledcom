@@ -53,6 +53,20 @@ export function useUpdateTransaction(id: string | number | string[] | undefined)
   });
 }
 
+export function useCreateManualTransaction() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (payload: any) => {
+      const response = await client.post("/api/transactions/manual", payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TRANSACTION_KEYS.all });
+    },
+  });
+}
+
 export function useProcessMedia() {
   const queryClient = useQueryClient();
   

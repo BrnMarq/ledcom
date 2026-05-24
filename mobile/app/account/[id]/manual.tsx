@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -16,46 +16,31 @@ import * as Sentry from "@sentry/react-native";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react-native";
 import { formatCurrency } from "@/src/utils/currency";
 import { logger } from "@/src/utils/logger";
-import { useTransactionDetail, useUpdateTransaction } from "@/src/api/queries/transaction";
+import { useCreateManualTransaction } from "@/src/api/queries/transaction";
+import { useAccounts } from "@/src/api/queries/account";
 
 interface TransactionItem {
-  id?: number;
   name: string;
   quantity: string;
   unitPrice: number;
   totalPrice: string;
 }
 
-export default function EditTransactionScreen() {
+export default function ManualTransactionScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
-  const { data: transaction, isLoading: loading } = useTransactionDetail(id as string);
-  const updateTransactionMutation = useUpdateTransaction(id as string);
+  const createManualMutation = useCreateManualTransaction();
+  const { data: accounts = [] } = useAccounts();
+  const currentAccount = accounts.find((a: any) => a.id.toString() === id);
+  const symbol = currentAccount?.symbol || "USD";
 
   const [type, setType] = useState("WANTS");
   const [flow, setFlow] = useState("OUT");
   const [context, setContext] = useState("");
-  const [items, setItems] = useState<TransactionItem[]>([]);
-  const [symbol, setSymbol] = useState("USD");
-
-  useEffect(() => {
-    if (transaction) {
-      setType(transaction.type);
-      setFlow(transaction.flow);
-      setContext(transaction.context || "");
-      setItems(
-        transaction.items
-          ? transaction.items.map((item: any) => ({
-              ...item,
-              quantity: item.quantity.toString(),
-              totalPrice: item.totalPrice.toString(),
-            }))
-          : [],
-      );
-      setSymbol(transaction.account?.symbol || "USD");
-    }
-  }, [transaction]);
+  const [items, setItems] = useState<TransactionItem[]>([
+    { name: "", quantity: "1", unitPrice: 0, totalPrice: "" },
+  ]);
 
   const computedTotal = items.reduce((sum, item) => sum + (parseFloat(item.totalPrice) || 0), 0);
 
@@ -66,6 +51,7 @@ export default function EditTransactionScreen() {
     }
 
     const payload = {
+      accountId: id,
       totalValue: computedTotal,
       type,
       flow,
@@ -82,16 +68,16 @@ export default function EditTransactionScreen() {
       }),
     };
 
-    updateTransactionMutation.mutate(payload, {
+    createManualMutation.mutate(payload, {
       onSuccess: () => {
-        Alert.alert("Éxito", "Transacción actualizada", [
-          { text: "OK", onPress: () => router.back() },
+        Alert.alert("Éxito", "Transacción creada", [
+          { text: "OK", onPress: () => router.navigate(`/account/${id}`) },
         ]);
       },
-      onError: (error) => {
-        logger.error("Error updating transaction", { error });
+      onError: (error: any) => {
+        logger.error("Error creating manual transaction", { error });
         Sentry.captureException(error);
-        Alert.alert("Error", "No se pudo actualizar.");
+        Alert.alert("Error", "No se pudo crear la transacción.");
       }
     });
   };
@@ -142,27 +128,19 @@ export default function EditTransactionScreen() {
     setItems(newItems);
   };
 
-  if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#10B981" />
-      </View>
-    );
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <View className="flex-row items-center justify-between p-6 bg-white border-b border-gray-100">
         <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
           <ArrowLeft color="#374151" size={24} />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-gray-800">Editar Gasto</Text>
+        <Text className="text-xl font-bold text-gray-800">Nueva Transacción</Text>
         <TouchableOpacity
           onPress={handleSave}
-          disabled={updateTransactionMutation.isPending}
+          disabled={createManualMutation.isPending}
           className="p-2 -mr-2"
         >
-          {updateTransactionMutation.isPending ? (
+          {createManualMutation.isPending ? (
             <ActivityIndicator size="small" color="#10B981" />
           ) : (
             <Save color="#10B981" size={24} />
@@ -268,6 +246,7 @@ export default function EditTransactionScreen() {
               numberOfLines={3}
               className="bg-white p-4 rounded-2xl text-base text-gray-800 border border-gray-200 min-h-[100px]"
               style={{ textAlignVertical: "top" }}
+              placeholder="Ej. Compra de supermercado, café con amigos..."
             />
           </View>
 
@@ -285,7 +264,7 @@ export default function EditTransactionScreen() {
 
           {items.map((item, index) => (
             <View
-              key={item.id ? `item-${item.id}` : `new-${index}`}
+              key={`new-${index}`}
               className="bg-white p-4 rounded-2xl border border-gray-200 mb-4"
             >
               <View className="flex-row justify-between items-center mb-2">
@@ -332,4 +311,3 @@ export default function EditTransactionScreen() {
     </SafeAreaView>
   );
 }
-

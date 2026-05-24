@@ -28,6 +28,7 @@ import {
   RefreshCw,
   Volume2,
   Image as ImageIcon,
+  PenLine,
 } from "lucide-react-native";
 
 export default function ScannerScreen() {
@@ -376,6 +377,22 @@ export default function ScannerScreen() {
             <Text className="text-2xl font-bold text-gray-800">Voz</Text>
             <Text className="text-gray-400 text-sm">
               Dicta tu gasto rápidamente
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          className="bg-white p-8 rounded-[40px] flex-row items-center border border-gray-100 shadow-sm mt-6"
+          onPress={() => router.push(`/account/${id}/manual`)}
+        >
+          <View className="bg-emerald-100 p-5 rounded-3xl mr-6">
+            <PenLine color="#10B981" size={32} />
+          </View>
+          <View className="flex-1">
+            <Text className="text-2xl font-bold text-gray-800">Manual</Text>
+            <Text className="text-gray-400 text-sm">
+              Ingresa los detalles a mano
             </Text>
           </View>
         </TouchableOpacity>

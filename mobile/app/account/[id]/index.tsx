@@ -17,6 +17,7 @@ import {
 import { formatCurrency } from "@/src/utils/currency";
 import * as Sentry from "@sentry/react-native";
 import { useAccountTransactions } from "@/src/api/queries/transaction";
+import { useAccounts } from "@/src/api/queries/account";
 
 interface TransactionItem {
   name: string;
@@ -26,7 +27,10 @@ interface TransactionItem {
 export default function HistoryScreen() {
   const { id } = useLocalSearchParams();
   const { data: transactions = [], isLoading: loading, refetch, isRefetching } = useAccountTransactions(id as string);
+  const { data: accounts = [] } = useAccounts();
   const router = useRouter();
+
+  const currentAccount = accounts.find((a: any) => a.id.toString() === id);
 
   useFocusEffect(
     useCallback(() => {
@@ -65,6 +69,21 @@ export default function HistoryScreen() {
         data={transactions}
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         keyExtractor={(item) => item.id.toString()}
+        ListHeaderComponent={
+          currentAccount ? (
+            <View className="bg-emerald-500 rounded-3xl p-6 mb-6 shadow-sm shadow-emerald-200">
+              <Text className="text-white/80 font-bold uppercase tracking-widest text-xs mb-1">
+                Balance Total
+              </Text>
+              <Text className="text-white text-4xl font-black">
+                {formatCurrency(currentAccount.balance || 0, currentAccount.symbol || 'USD')}
+              </Text>
+              <View className="bg-white/20 self-start px-3 py-1 rounded-full mt-3">
+                 <Text className="text-white font-bold text-xs">{currentAccount.name}</Text>
+              </View>
+            </View>
+          ) : null
+        }
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
