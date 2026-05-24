@@ -6,9 +6,35 @@ import routes from "@/routes";
 
 const app = express();
 
-app.use(pino({ logger }));
+const isDev = process.env.NODE_ENV !== 'production';
+
 app.use(cors());
 app.use(express.json());
+
+// Intercept response body in development for logging
+if (isDev) {
+  app.use((req, res, next) => {
+    const originalJson = res.json;
+    res.json = function (body) {
+      res.locals.body = body;
+      return originalJson.call(this, body);
+    };
+    next();
+  });
+}
+
+app.use(pino({ 
+  logger,
+  customProps: (req, res) => {
+    if (isDev) {
+      return {
+        reqBody: (req as any).body,
+        resBody: (res as any).locals.body
+      };
+    }
+    return {};
+  }
+}));
 
 // Placeholder Favicon
 app.get('/favicon.ico', (req, res) => {

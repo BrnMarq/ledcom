@@ -2,7 +2,10 @@ import { TransactionType, TransactionFlow } from "@prisma/client";
 import prisma from "@/client";
 import { GoogleGenAI } from "@google/genai";
 import * as fs from "fs";
-import { calculateUnitPrice, calculateTransactionTotal } from "@/utils/calculations";
+import {
+  calculateUnitPrice,
+  calculateTransactionTotal,
+} from "@/utils/calculations";
 import logger from "@/utils/logger";
 
 const SYSTEM_PROMPT = `
@@ -11,15 +14,18 @@ Eres un asistente financiero experto. Analiza este recibo (imagen) o nota de voz
 2. Clasifica la transacción (type) estrictamente como 'NEEDS' (necesidades básicas como mercado, renta), 'WANTS' (deseos como café, salidas), o 'SAVINGS' (ahorros o inversiones).
 3. Define el flujo (flow) como 'OUT' (gasto) o 'IN' (ingreso).
 4. IMPORTANTE: Traduce todos los nombres de los artículos y el resumen (context) al ESPAÑOL, sin importar el idioma original del archivo.
+5. IMPORTANTE: Si la imagen/audio no tiene nada que ver con un recibo o gasto financiero, devuelve: {"error": "INVALID_CONTENT"}
+6. IMPORTANTE: Si la imagen/audio es ilegible, borrosa o inaudible, devuelve: {"error": "UNREADABLE_CONTENT"}
 
-Devuelve ÚNICAMENTE un objeto JSON válido con la siguiente estructura y sin markdown de código:
+Devuelve ÚNICAMENTE un objeto JSON válido (sin markdown) con la siguiente estructura:
 {
   "context": "Resumen breve",
   "type": "NEEDS",
   "flow": "OUT",
   "items": [
     { "name": "Cebolla", "quantity": 3, "totalPrice": 1.5 }
-  ]
+  ],
+  "date": "YYYY-MM-DD"
 }
 `;
 
@@ -60,10 +66,14 @@ export class ContextService {
         .replace(/```json/g, "")
         .replace(/```/g, "")
         .trim();
-      return JSON.parse(cleanJson);
-    } catch (error) {
+      const result = JSON.parse(cleanJson);
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      return result;
+    } catch (error: any) {
       logger.error({ error }, "[ContextService] Error calling Gemini API");
-      throw new Error("Failed to process media with AI.");
+      throw error; // Propagate the specific error (e.g., INVALID_CONTENT)
     } finally {
       // Clean up the file to prevent storage bloat
       if (fs.existsSync(fileUrl)) {
@@ -106,7 +116,6 @@ export class ContextService {
     accountId: number,
     fileUrl: string,
     fileType: string,
-    defaultSymbol: string = "USD", // Keeping argument for potential future use or backward compat, but won't save to transaction table.
   ) {
     logger.info(`[ContextService] Starting AI processing for new media...`);
 
@@ -119,10 +128,14 @@ export class ContextService {
       name: item.name,
       quantity: item.quantity,
       totalPrice: item.totalPrice,
-      unitPrice: calculateUnitPrice(item.totalPrice, item.quantity)
+      unitPrice: calculateUnitPrice(item.totalPrice, item.quantity),
     }));
 
     const calculatedTotalValue = calculateTransactionTotal(processedItems);
+
+    const transactionDate = aiResult.date
+      ? new Date(aiResult.date)
+      : new Date();
 
     // Create the Transaction with Media and Items all at once
     const transaction = await prisma.transaction.create({
@@ -133,6 +146,7 @@ export class ContextService {
         flow: (aiResult.flow as TransactionFlow) || "OUT",
         context: aiResult.context,
         status: "COMPLETED",
+        date: transactionDate,
         items:
           processedItems.length > 0
             ? {

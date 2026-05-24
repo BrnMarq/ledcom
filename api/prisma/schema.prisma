@@ -10,21 +10,66 @@ model User {
   id        Int       @id @default(autoincrement())
   email     String    @unique
   password  String?
+  createdAt DateTime  @default(now())
   googleId  String?   @unique
   accounts  Account[]
-  createdAt DateTime  @default(now())
 }
 
 model Account {
   id           Int           @id @default(autoincrement())
   name         String
+  userId       Int
+  createdAt    DateTime      @default(now())
   symbol       String        @default("USD")
   user         User          @relation(fields: [userId], references: [id])
-  userId       Int
   transactions Transaction[]
-  createdAt    DateTime      @default(now())
 
   @@unique([name, userId])
+}
+
+model Transaction {
+  id         Int                @id @default(autoincrement())
+  accountId  Int
+  totalValue Float              @default(0)
+  type       TransactionType
+  flow       TransactionFlow    @default(OUT)
+  date       DateTime           @default(now())
+  createdAt  DateTime           @default(now())
+  context    String?
+  status     String             @default("PENDING_CONTEXT")
+  source     TransactionSource  @default(MANUAL)
+  account    Account            @relation(fields: [accountId], references: [id])
+  items      TransactionItem[]
+  media      TransactionMedia[]
+}
+
+model TransactionItem {
+  id            Int         @id @default(autoincrement())
+  transactionId Int
+  name          String
+  quantity      Float
+  unitPrice     Float
+  totalPrice    Float
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+}
+
+model TransactionMedia {
+  id            Int         @id @default(autoincrement())
+  url           String
+  type          String
+  transactionId Int
+  createdAt     DateTime    @default(now())
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+}
+
+model DailyPrice {
+  id       Int      @id @default(autoincrement())
+  symbol   String
+  provider String
+  price    Float
+  date     DateTime @db.Date
+
+  @@unique([symbol, date, provider])
 }
 
 enum TransactionType {
@@ -38,49 +83,7 @@ enum TransactionFlow {
   OUT
 }
 
-model Transaction {
-  id          Int      @id @default(autoincrement())
-  accountId   Int
-  account     Account  @relation(fields: [accountId], references: [id])
-  totalValue  Float    @default(0) // Total fiat impact
-  type        TransactionType
-  flow        TransactionFlow @default(OUT)
-  date        DateTime @default(now())
-  
-  // Updated Context Fields
-  context     String?
-  status      String   @default("PENDING_CONTEXT")
-  
-  media       TransactionMedia[]
-  items       TransactionItem[]
-}
-
-model TransactionItem {
-  id            Int         @id @default(autoincrement())
-  transactionId Int
-  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
-  
-  name          String
-  quantity      Float
-  unitPrice     Float
-  totalPrice    Float
-}
-
-model TransactionMedia {
-  id            Int         @id @default(autoincrement())
-  url           String
-  type          String      // AUDIO, IMAGE
-  transactionId Int
-  transaction   Transaction @relation(fields: [transactionId], references: [id])
-  createdAt     DateTime    @default(now())
-}
-
-model DailyPrice {
-  id        Int      @id @default(autoincrement())
-  symbol    String
-  provider  String
-  price     Float
-  date      DateTime @db.Date
-  
-  @@unique([symbol, date, provider])
+enum TransactionSource {
+  MANUAL
+  BOT
 }

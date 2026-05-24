@@ -117,13 +117,23 @@ describe("TransactionService", () => {
       expect(result.totalValue).toBe(60);
     });
 
-    it("should throw an error if transaction not found or not authorized to update", async () => {
+    it("should throw an error if transaction items are missing", async () => {
       const transactionId = 101;
       const userId = 10;
 
+      await expect(transactionService.updateTransaction(transactionId, userId, {})).rejects.toThrow("La transacción debe tener al menos un artículo.");
+    });
+
+    it("should throw an error if transaction not found or not authorized to update", async () => {
+      const transactionId = 101;
+      const userId = 10;
+      const data = {
+        items: [{ name: "Test", quantity: 1, totalPrice: 10 }]
+      };
+
       prismaMock.transaction.findFirst.mockResolvedValue(null);
 
-      await expect(transactionService.updateTransaction(transactionId, userId, {})).rejects.toThrow("Transacción no encontrada o no autorizada");
+      await expect(transactionService.updateTransaction(transactionId, userId, data as any)).rejects.toThrow("Transacción no encontrada o no autorizada");
     });
   });
 });

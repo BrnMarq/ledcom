@@ -40,7 +40,6 @@ export class TransactionController {
         accountId,
         file.path,
         type,
-        account.symbol,
       );
 
       res.status(201).json({
@@ -48,7 +47,46 @@ export class TransactionController {
         transaction,
       });
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      if (
+        error.message === "INVALID_CONTENT" ||
+        error.message === "UNREADABLE_CONTENT"
+      ) {
+        res.status(422).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: error.message });
+      }
+    }
+  }
+
+  async createManual(req: AuthRequest, res: Response) {
+    try {
+      const accountId = parseInt(req.body.accountId as string);
+      const userId = req.userId!;
+      const data = req.body;
+
+      if (isNaN(accountId)) {
+        res.status(400).json({ error: "Valid accountId is required" });
+        return;
+      }
+
+      const transaction = await transactionService.createTransaction(
+        userId,
+        accountId,
+        data
+      );
+
+      res.status(201).json({
+        message: "Transaction created successfully.",
+        transaction,
+      });
+    } catch (error: any) {
+      if (error.message === "Cuenta no encontrada o no autorizada") {
+        res.status(403).json({ error: error.message });
+      } else if (error.message === "La transacción debe tener al menos un artículo.") {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: error.message });
+      }
     }
   }
 
@@ -102,6 +140,8 @@ export class TransactionController {
     } catch (error: any) {
       if (error.message === "Transacción no encontrada o no autorizada") {
         res.status(403).json({ error: error.message });
+      } else if (error.message === "La transacción debe tener al menos un artículo.") {
+        res.status(400).json({ error: error.message });
       } else {
         res.status(500).json({ error: error.message });
       }
