@@ -1,6 +1,6 @@
-# FinanceTracker 📈
+# Finvez 📈
 
-FinanceTracker is a full-stack, AI-powered personal finance management application. It allows users to track their portfolios, record manual transactions, fetch daily asset prices, and—most importantly—use artificial intelligence to automatically parse receipts (images) and voice notes (audio) into structured financial transactions.
+Finvez is a full-stack, AI-powered personal finance management application. It allows users to track their portfolios, record manual transactions, fetch daily asset prices, and—most importantly—use artificial intelligence to automatically parse receipts (images) and voice notes (audio) into structured financial transactions.
 
 ## 🏗 Repository Structure
 

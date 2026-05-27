@@ -1,6 +1,6 @@
-# 🤖 Agents Guidelines for FinanceTracker
+# 🤖 Agents Guidelines for Finvez
 
-Welcome to the FinanceTracker monorepo! This document provides essential instructions, commands, and code style guidelines for AI agents operating in this codebase.
+Welcome to the Finvez monorepo! This document provides essential instructions, commands, and code style guidelines for AI agents operating in this codebase.
 
 ## 🏗 Repository Structure
 
