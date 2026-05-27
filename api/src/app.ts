@@ -48,12 +48,12 @@ app.get('/', (req, res) => {
   res.send(`
     <html>
       <head>
-        <title>Financial Tracker API</title>
+        <title>Finvez API</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
       </head>
       <body style="font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f3f4f6; margin: 0;">
         <div style="text-align: center; padding: 2.5rem; background: white; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
-          <h1 style="color: #111827; margin-bottom: 0.5rem;">📈 Financial Tracker API</h1>
+          <h1 style="color: #111827; margin-bottom: 0.5rem;">📈 Finvez API</h1>
           <p style="color: #4B5563; margin-bottom: 2rem;">System is online and running successfully.</p>
           <div style="display: flex; gap: 1rem; justify-content: center;">
             <code style="background: #e5e7eb; padding: 0.5rem 1rem; border-radius: 6px; color: #1f2937; font-weight: 600;">/api/prices</code>
